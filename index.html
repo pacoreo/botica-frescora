@@ -368,7 +368,7 @@ dialog .campo input[type=range] { padding: 0; }
     </div>
     <div class="fila">
       <div class="campo"><label for="iMargen">Margen izquierdo (mm)</label><input id="iMargen" type="number" min="0" max="40" step="0.5" inputmode="decimal"></div>
-      <div class="campo"><label for="iPapel">Papel</label><select id="iPapel"><option value="10">Etiqueta con separación</option><option value="11">Continuo</option><option value="38">Marca negra</option></select></div>
+      <div class="campo"><label for="iPapel">Papel</label><select id="iPapel"><option value="11">Continuo</option><option value="10">Papel con separación (inters.)</option><option value="38">Marca negra (negro)</option></select></div>
     </div>
     <span class="ayuda">Si la etiqueta sale corrida hacia un lado, imprime la prueba de alineación y ajusta el margen izquierdo hasta que el recuadro quede centrado. Para papel holográfico sube la oscuridad.</span>
     <button class="btn sec" id="bPrueba" type="button">Imprimir prueba de alineación</button>
@@ -946,8 +946,8 @@ dialog .campo input[type=range] { padding: 0; }
     }
   }
   const baseAmb = () => "frescora-" + (slug(borrador.nombre) || "etiqueta");
-  $("bGuardarPng").addEventListener("click", () => guardarEtiqueta(lienzo, 50, 80, baseAmb(), "png", aviso, "Imprímela en la app de Phomemo con etiqueta de 50 × 80 mm."));
-  $("bGuardarPdf").addEventListener("click", () => guardarEtiqueta(lienzo, 50, 80, baseAmb(), "pdf", aviso, "La página mide 50 × 80 mm; imprímelo al 100 %, sin ajustar a la página."));
+  $("bGuardarPng").addEventListener("click", () => guardarEtiqueta(lienzo, 50, 80, baseAmb(), "png", aviso, "En Phomemo: papel Continuo, 50 × 80 mm, dirección vertical."));
+  $("bGuardarPdf").addEventListener("click", () => guardarEtiqueta(lienzo, 50, 80, baseAmb(), "pdf", aviso, "En Phomemo: Recortar PDF → papel Continuo, ancho 50 y alto 80 mm, dirección vertical."));
   $("bCompartir").addEventListener("click", () => guardarEtiqueta(lienzo, 50, 80, baseAmb(), "compartir", aviso, ""));
 
   // ---------------------------------------------------------------- Catálogo (db o local)
@@ -1222,8 +1222,8 @@ dialog .campo input[type=range] { padding: 0; }
   }
   const decirP = (t) => { $("avisoP").textContent = t; };
   const medidasP = () => formato === "par" ? [50, 25] : [50, 50];
-  $("bGuardarP").addEventListener("click", () => { const [w, h] = medidasP(); guardarEtiqueta(lienzoP, w, h, baseP(), "png", decirP, "En la app de Phomemo elige etiqueta de " + w + " × " + h + " mm."); });
-  $("bGuardarPPdf").addEventListener("click", () => { const [w, h] = medidasP(); guardarEtiqueta(lienzoP, w, h, baseP(), "pdf", decirP, "La página mide " + w + " × " + h + " mm; imprímelo al 100 %, sin ajustar a la página."); });
+  $("bGuardarP").addEventListener("click", () => { const [w, h] = medidasP(); guardarEtiqueta(lienzoP, w, h, baseP(), "png", decirP, "En Phomemo: papel Continuo, " + w + " × " + h + " mm, dirección vertical."); });
+  $("bGuardarPPdf").addEventListener("click", () => { const [w, h] = medidasP(); guardarEtiqueta(lienzoP, w, h, baseP(), "pdf", decirP, "En Phomemo: Recortar PDF → papel Continuo, ancho " + w + " y alto " + h + " mm, dirección vertical."); });
   $("bCompartirP").addEventListener("click", () => { const [w, h] = medidasP(); guardarEtiqueta(lienzoP, w, h, baseP(), "compartir", decirP, ""); });
 
   function pDatosLimpios() {
@@ -1446,7 +1446,7 @@ dialog .campo input[type=range] { padding: 0; }
   $("bSalir").addEventListener("click", async () => { await sb.auth.signOut(); });
 
   // ================================================================ IMPRESORA BLUETOOTH (beta)
-  const AJ = Object.assign({ densidad: 10, copias: 1, margen: 0, papel: 10 }, (() => { try { return JSON.parse(localStorage.getItem("frescora-impresora") || "{}"); } catch (e) { return {}; } })());
+  const AJ = Object.assign({ densidad: 10, copias: 1, margen: 0, papel: 11 }, (() => { try { return JSON.parse(localStorage.getItem("frescora-impresora") || "{}"); } catch (e) { return {}; } })());
   function guardarAjustes() { try { localStorage.setItem("frescora-impresora", JSON.stringify(AJ)); } catch (e) {} }
   const enlace = { dispositivo: null, car: null, sinRespuesta: true };
   const SERVICIOS = [0xff00, 0xff80, 0xae30, 0xae00, 0xfee7, 0x18f0, 0xffe0,

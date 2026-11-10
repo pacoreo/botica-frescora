@@ -1,5 +1,5 @@
 // Botica Frescora: funciona sin internet guardando la app en el celular.
-const VERSION = "frescora-v2";
+const VERSION = "frescora-v3";
 const ARCHIVOS = [
   "./", "index.html", "manifest.webmanifest", "config.js", "catalogo.json",
   "vendor/supabase.js", "vendor/jspdf.umd.min.js", "fonts/fonts.css",
