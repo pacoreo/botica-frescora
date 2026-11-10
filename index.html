@@ -1,0 +1,1591 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Botica Frescora</title>
+<meta name="description" content="Botica de etiquetas Frescora: ambientadores y perfumes para impresora térmica.">
+<meta name="theme-color" content="#14161b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Layout: una sola columna para celular — catálogo arriba, etiqueta al centro, ficha de edición abajo. */
+:root {
+  --bg: #eceef2;
+  --surface: #ffffff;
+  --ink: #14161b;
+  --muted: #5a6070;
+  --line: #d3d7df;
+  --accent: #3a3e8c;
+  --danger: #a3262e;
+  --holo: linear-gradient(115deg, #c9d6ff 0%, #f6c8ff 22%, #c4fff1 45%, #fff4b8 65%, #c3d0ff 85%, #f2c9ff 100%);
+  --f-display: "Cinzel", "Trajan Pro", Georgia, serif;
+  --f-body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1014; --surface: #181b22; --ink: #e8eaf0; --muted: #9aa1b0;
+    --line: #2b303b; --accent: #aab1ff; --danger: #ff8a90; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1014; --surface: #181b22; --ink: #e8eaf0; --muted: #9aa1b0;
+  --line: #2b303b; --accent: #aab1ff; --danger: #ff8a90; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: max(18px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+}
+.wrap { max-width: 920px; margin: 0 auto; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+.wrap > *, .vistaSec > *, .mesa > * { min-width: 0; }
+header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 1.45rem; letter-spacing: .14em; margin: 0; }
+h1 small { display: block; font-family: var(--f-body); font-size: .72rem; letter-spacing: .18em; color: var(--muted); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+.estado { font-size: .78rem; color: var(--muted); }
+h2 { font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; font-weight: 700; }
+
+/* Catálogo */
+.catalogo { display: flex; flex-wrap: wrap; gap: 6px; max-height: 196px; overflow-y: auto; padding: 2px; }
+.chip {
+  flex: 0 0 auto; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 999px; padding: 8px 14px; font: 600 .86rem var(--f-body); cursor: pointer; white-space: nowrap;
+}
+.chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+.chip.nueva { border-style: dashed; color: var(--accent); border-color: var(--accent); }
+.vacio { color: var(--muted); font-size: .9rem; padding: 6px 0; }
+
+/* Mesa de trabajo */
+.mesa { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .mesa { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; } }
+
+.vista { display: grid; gap: 12px; justify-items: center; }
+.papel {
+  width: min(280px, 100%); aspect-ratio: 5 / 8; max-width: 100%;
+  border-radius: 6px; box-shadow: 0 1px 0 var(--line), 0 10px 30px rgba(0,0,0,.18);
+  background: #fff; position: relative; overflow: hidden;
+}
+.papel canvas { width: 100%; height: 100%; display: block; }
+.papel.holo { background: var(--holo); }
+.papel.holo canvas { mix-blend-mode: multiply; }
+.papel.holo::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(100deg, rgba(255,255,255,0) 0 18px, rgba(255,255,255,.35) 22px, rgba(255,255,255,0) 30px);
+}
+.toggles { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.seg { border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 10px; font: 600 .8rem var(--f-body); cursor: pointer; }
+.seg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.medida { font-size: .76rem; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+
+.btn {
+  border: 0; border-radius: 10px; padding: 13px 16px; font: 800 .92rem var(--f-body); letter-spacing: .02em; cursor: pointer;
+  background: var(--ink); color: var(--bg); width: 100%;
+}
+.btn.holo { background: var(--holo); color: #14161b; box-shadow: inset 0 0 0 1.5px rgba(20,22,27,.85); }
+.btn.sec { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+.btn.peligro { background: transparent; color: var(--danger); box-shadow: inset 0 0 0 1.5px var(--danger); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn:focus-visible, .chip:focus-visible, .seg:focus-visible, input:focus-visible, textarea:focus-visible, .emb:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+.acciones { display: grid; gap: 8px; width: min(340px, 100%); grid-template-columns: 1fr 1fr; }
+.buscador { display: grid; gap: 8px; }
+.buscador input { width: 100%; font: 500 1rem var(--f-body); color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 11px 12px; }
+.buscador input:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+.filtros { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.cuenta { font-size: .78rem; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+.resultados { display: flex; flex-wrap: wrap; gap: 6px; max-height: 236px; overflow-y: auto; padding: 2px; }
+.resultados .chip { display: inline-flex; flex-direction: column; align-items: flex-start; border-radius: 10px; padding: 6px 10px; line-height: 1.2; text-align: left; white-space: normal; max-width: 100%; }
+.resultados .chip small { font-weight: 500; font-size: .7rem; color: var(--muted); }
+.resultados .chip[aria-pressed="true"] small { color: inherit; opacity: .75; }
+.aviso { font-size: .82rem; color: var(--muted); text-align: center; min-height: 1.2em; margin: 0; }
+
+/* Ficha */
+.ficha { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.campo { display: grid; gap: 5px; min-width: 0; }
+.campo label, .campo .lbl { font-size: .74rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.campo input, .campo textarea {
+  width: 100%; font: 500 1rem var(--f-body); color: var(--ink); background: var(--bg);
+  border: 1.5px solid var(--line); border-radius: 9px; padding: 10px 12px;
+}
+.campo textarea { resize: vertical; min-height: 64px; }
+.fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ayuda { font-size: .76rem; color: var(--muted); }
+.emblemas { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; max-height: 330px; overflow-y: auto; padding: 2px; }
+.emb span { text-align: center; line-height: 1.15; }
+.emb {
+  border: 1.5px solid var(--line); border-radius: 10px; background: #fff; padding: 6px 4px 4px; cursor: pointer;
+  display: grid; justify-items: center; gap: 2px; font: 600 .72rem var(--f-body); color: #14161b;
+}
+.emb canvas { width: 52px; height: 52px; }
+.emb[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.botones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.confirmar { border: 1.5px solid var(--danger); border-radius: 10px; padding: 12px; display: grid; gap: 8px; }
+.confirmar p { margin: 0; font-size: .9rem; }
+.tabs { display: flex; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.tab { flex: 1; border: 0; background: transparent; color: var(--muted); font: 700 .9rem var(--f-body); padding: 10px 8px; border-radius: 9px; cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+.tab:focus-visible, select:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+.vistaSec { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+.papelP { width: min(300px, 100%); max-width: 100%; background: #fff; border-radius: 4px; box-shadow: 0 1px 0 var(--line), 0 10px 30px rgba(0,0,0,.18); overflow: hidden; }
+.papelP.ancho { width: min(340px, 100%); }
+.papelP canvas { width: 100%; height: auto; display: block; }
+.campo select {
+  width: 100%; font: 600 .95rem var(--f-body); color: var(--ink); background: var(--bg);
+  border: 1.5px solid var(--line); border-radius: 9px; padding: 10px 10px;
+}
+.hoja { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; width: min(340px, 100%); }
+.ranura { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; align-items: end; }
+.mini { font-size: .8rem; padding: 8px 10px; border-radius: 8px; width: auto; justify-self: start; }
+@media (prefers-reduced-motion: no-preference) { .chip, .btn, .seg, .emb, .tab { transition: background .15s, color .15s, border-color .15s; } }
+.cabecera-der { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.mini-btn { border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 12px; font: 700 .78rem var(--f-body); cursor: pointer; }
+.mini-btn.acento { border-color: var(--accent); color: var(--accent); }
+.banda { background: var(--surface); border: 1.5px dashed var(--accent); border-radius: 12px; padding: 12px 14px; display: grid; gap: 10px; }
+.banda p { margin: 0; font-size: .9rem; }
+.acciones .ancho-total { grid-column: 1 / -1; }
+.acciones.tres { grid-template-columns: repeat(3, 1fr); }
+.acceso { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; place-items: center; padding: 24px max(16px, env(safe-area-inset-left, 0px)); }
+.acceso form { width: min(360px, 100%); display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+.acceso h2 { font-family: var(--f-display); font-size: 1.3rem; letter-spacing: .14em; color: var(--ink); text-transform: none; margin: 0; }
+.error { color: var(--danger); font-size: .86rem; margin: 0; min-height: 1.2em; }
+dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); padding: 18px; width: min(420px, calc(100% - 32px)); }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+dialog .campo input[type=range] { padding: 0; }
+.bt-estado { font-size: .82rem; color: var(--muted); }
+.bt-estado.ok { color: var(--accent); font-weight: 700; }
+.beta { font-size: .66rem; font-weight: 800; letter-spacing: .1em; border: 1.5px solid currentColor; border-radius: 6px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Frescora<small>Botica de etiquetas</small></h1>
+    <div class="cabecera-der">
+      <span class="estado" id="estado">Abriendo tu catálogo…</span>
+      <button class="mini-btn acento" id="bInstalar" type="button" hidden>Instalar app</button>
+      <button class="mini-btn" id="bImpresora" type="button">Impresora</button>
+      <button class="mini-btn" id="bSalir" type="button" hidden>Salir</button>
+    </div>
+  </header>
+
+  <div class="banda" id="semilla" hidden>
+    <p id="semillaTxt">Tu catálogo está vacío. Puedes cargar las 552 referencias del catálogo Frescora (519 perfumes y 33 ambientadores).</p>
+    <button class="btn" id="bSemilla" type="button">Cargar catálogo inicial</button>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Tipo de producto">
+    <button class="tab" role="tab" id="tabAmb" aria-selected="true" aria-controls="vAmb" type="button">Ambientadores</button>
+    <button class="tab" role="tab" id="tabPer" aria-selected="false" aria-controls="vPer" type="button">Perfumes</button>
+  </div>
+
+  <div class="vistaSec" id="vAmb" role="tabpanel" aria-labelledby="tabAmb">
+  <section aria-labelledby="t-cat">
+    <h2 id="t-cat">Fragancias</h2>
+    <div class="catalogo" id="catalogo" role="toolbar" aria-label="Fragancias guardadas"></div>
+  </section>
+
+  <div class="mesa">
+    <section class="vista" aria-labelledby="t-vista">
+      <h2 id="t-vista" style="justify-self:start">Etiqueta</h2>
+      <div class="papel" id="papel"><canvas id="lienzo" width="1200" height="1920" aria-label="Vista previa de la etiqueta"></canvas></div>
+      <div class="toggles" role="group" aria-label="Fondo de la vista previa">
+        <button class="seg" id="fBlanco" aria-pressed="false" type="button">Papel blanco</button>
+        <button class="seg" id="fHolo" aria-pressed="true" type="button">Papel holográfico</button>
+      </div>
+      <p class="medida">50 × 80 mm · alta resolución (600 ppp) · solo negro puro</p>
+      <div class="acciones">
+        <button class="btn holo ancho-total" id="bImprimir" type="button">Imprimir por Bluetooth<span class="beta">BETA</span></button>
+      </div>
+      <div class="acciones tres">
+        <button class="btn sec" id="bCompartir" type="button">Compartir</button>
+        <button class="btn sec" id="bGuardarPng" type="button">PNG</button>
+        <button class="btn sec" id="bGuardarPdf" type="button">PDF</button>
+      </div>
+      <p class="aviso" id="aviso" role="status"></p>
+    </section>
+
+    <form class="ficha" id="ficha" autocomplete="off">
+      <h2 style="margin:0">Ficha de la fragancia</h2>
+      <div class="campo">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" maxlength="28" required>
+      </div>
+      <div class="campo">
+        <label for="lema">Lema (tres palabras)</label>
+        <input id="lema" maxlength="40" placeholder="Floral · Fresco · Luminoso">
+      </div>
+      <div class="campo">
+        <span class="lbl" id="t-emb">Emblema</span>
+        <span class="ayuda">Al elegir un emblema se llenan el lema y los ingredientes de esa esencia. Puedes ajustarlos después.</span>
+        <div class="emblemas" id="emblemas" role="group" aria-labelledby="t-emb"></div>
+      </div>
+      <div class="fila">
+        <div class="campo">
+          <label for="concentracion">Concentración</label>
+          <input id="concentracion" maxlength="8" inputmode="decimal">
+        </div>
+        <div class="campo">
+          <label for="volumen">Contenido</label>
+          <input id="volumen" maxlength="10">
+        </div>
+      </div>
+      <div class="campo">
+        <label for="ingredientes">Ingredientes</label>
+        <textarea id="ingredientes" maxlength="90"></textarea>
+        <span class="ayuda">Aparece después de “Ingredientes:”. Las advertencias de uso se agregan solas.</span>
+      </div>
+      <div class="botones">
+        <button class="btn" id="bGuardar" type="submit">Guardar ficha</button>
+        <button class="btn sec" id="bDuplicar" type="button">Duplicar</button>
+      </div>
+      <button class="btn peligro" id="bEliminar" type="button">Eliminar fragancia</button>
+      <div class="confirmar" id="confirmar" hidden>
+        <p id="confirmarTxt">¿Eliminar esta fragancia del catálogo?</p>
+        <div class="botones">
+          <button class="btn peligro" id="bSi" type="button">Sí, eliminar</button>
+          <button class="btn sec" id="bNo" type="button">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  </div>
+
+  <div class="vistaSec" id="vPer" role="tabpanel" aria-labelledby="tabPer" hidden>
+    <section aria-labelledby="t-pcat">
+      <h2 id="t-pcat">Biblioteca de perfumes</h2>
+      <div class="buscador">
+        <input id="pBuscar" type="search" placeholder="Buscar por perfume o casa…" aria-label="Buscar perfume" autocomplete="off">
+        <div class="filtros" role="group" aria-label="Filtrar por línea">
+          <button class="seg" type="button" data-linea="todos" aria-pressed="true">Todos</button>
+          <button class="seg" type="button" data-linea="MEN" aria-pressed="false">Caballero</button>
+          <button class="seg" type="button" data-linea="WOMEN" aria-pressed="false">Dama</button>
+          <span class="cuenta" id="pCuenta"></span>
+        </div>
+        <div class="resultados" id="pCatalogo" role="toolbar" aria-label="Perfumes encontrados"></div>
+      </div>
+    </section>
+
+    <div class="mesa">
+      <section class="vista" aria-labelledby="t-hoja">
+        <h2 id="t-hoja" style="justify-self:start">Hoja de impresión</h2>
+        <div class="toggles" role="group" aria-label="Formato">
+          <button class="seg" id="fmPar" aria-pressed="true" type="button">Pareja 25×25 · hoja 50×25</button>
+          <button class="seg" id="fmGrande" aria-pressed="false" type="button">100 ml · 50×50</button>
+        </div>
+        <div class="papelP ancho" id="papelP"><canvas id="lienzoP" width="1200" height="600" aria-label="Vista previa de la hoja de perfumes"></canvas></div>
+        <p class="medida" id="medidaP">hoja 50 × 25 mm · alta resolución (600 ppp) · solo negro puro</p>
+
+        <div class="hoja" id="panelPar">
+          <div class="ranura">
+            <div class="campo"><label for="sIzq">Izquierda</label><select id="sIzq"></select></div>
+            <div class="campo"><label for="vIzq">Tamaño</label><select id="vIzq"><option>60 ML</option><option>30 ML</option><option selected>3 ML</option></select></div>
+          </div>
+          <div class="ranura">
+            <div class="campo"><label for="sDer">Derecha</label><select id="sDer"></select></div>
+            <div class="campo"><label for="vDer">Tamaño</label><select id="vDer"><option>60 ML</option><option>30 ML</option><option selected>3 ML</option></select></div>
+          </div>
+          <button class="btn sec mini" id="bRepetir" type="button">Repetir la izquierda en las dos</button>
+        </div>
+        <div class="hoja" id="panelGrande" hidden>
+          <div class="ranura">
+            <div class="campo"><label for="sGrande">Perfume</label><select id="sGrande"></select></div>
+            <div class="campo"><label for="vGrande">Tamaño</label><select id="vGrande"><option selected>100 ML</option><option>60 ML</option><option>30 ML</option></select></div>
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button class="btn holo ancho-total" id="bImprimirP" type="button">Imprimir por Bluetooth<span class="beta">BETA</span></button>
+        </div>
+        <div class="acciones tres">
+          <button class="btn sec" id="bCompartirP" type="button">Compartir</button>
+          <button class="btn sec" id="bGuardarP" type="button">PNG</button>
+          <button class="btn sec" id="bGuardarPPdf" type="button">PDF</button>
+        </div>
+        <p class="aviso" id="avisoP" role="status"></p>
+      </section>
+
+      <form class="ficha" id="pFicha" autocomplete="off">
+        <h2 style="margin:0">Ficha del perfume</h2>
+        <div class="campo">
+          <label for="pMarca">Inspirado en (casa / diseñador)</label>
+          <input id="pMarca" maxlength="40" required placeholder="CAROLINA HERRERA">
+        </div>
+        <div class="campo">
+          <label for="pNombre">Nombre del perfume</label>
+          <input id="pNombre" maxlength="40" required placeholder="GOOD GIRL SUPREME">
+          <span class="ayuda">El tamaño de letra se ajusta solo. Para forzar el salto de línea escribe “/”, por ejemplo BLUE/SEDUCTION.</span>
+        </div>
+        <div class="campo">
+          <label for="pGenero">Línea</label>
+          <input id="pGenero" maxlength="16" list="generos" placeholder="WOMEN">
+          <datalist id="generos"><option value="WOMEN"><option value="MEN"><option value="UNISEX"><option value="FOR HER"><option value="FOR HIM"></datalist>
+        </div>
+        <div class="botones">
+          <button class="btn" id="pGuardar" type="submit">Guardar perfume</button>
+          <button class="btn sec" id="pDuplicar" type="button">Duplicar</button>
+        </div>
+        <button class="btn peligro" id="pEliminar" type="button">Eliminar perfume</button>
+        <div class="confirmar" id="pConfirmar" hidden>
+          <p id="pConfirmarTxt">¿Eliminar este perfume de la biblioteca?</p>
+          <div class="botones">
+            <button class="btn peligro" id="pSi" type="button">Sí, eliminar</button>
+            <button class="btn sec" id="pNo" type="button">Cancelar</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="acceso" id="acceso" hidden>
+  <form id="fAcceso" autocomplete="on">
+    <h2>Frescora</h2>
+    <p class="ayuda" style="margin:0">Entra con la cuenta de tu catálogo en la nube.</p>
+    <div class="campo"><label for="aCorreo">Correo</label><input id="aCorreo" type="email" autocomplete="username" required></div>
+    <div class="campo"><label for="aClave">Contraseña</label><input id="aClave" type="password" autocomplete="current-password" required></div>
+    <p class="error" id="aError" role="alert"></p>
+    <button class="btn" id="aEntrar" type="submit">Entrar</button>
+  </form>
+</div>
+
+<dialog id="dlgImp" aria-labelledby="tImp">
+  <form method="dialog" style="display:grid;gap:14px">
+    <h2 id="tImp" style="margin:0">Impresora Bluetooth <span class="beta">BETA</span></h2>
+    <p class="bt-estado" id="btEstado">Sin conectar.</p>
+    <button class="btn" id="bConectar" type="button">Conectar impresora</button>
+    <div class="fila">
+      <div class="campo"><label for="iDensidad">Oscuridad <span id="iDensidadV"></span></label><input id="iDensidad" type="range" min="1" max="15" step="1"></div>
+      <div class="campo"><label for="iCopias">Copias</label><input id="iCopias" type="number" min="1" max="50" step="1" inputmode="numeric"></div>
+    </div>
+    <div class="fila">
+      <div class="campo"><label for="iMargen">Margen izquierdo (mm)</label><input id="iMargen" type="number" min="0" max="40" step="0.5" inputmode="decimal"></div>
+      <div class="campo"><label for="iPapel">Papel</label><select id="iPapel"><option value="10">Etiqueta con separación</option><option value="11">Continuo</option><option value="38">Marca negra</option></select></div>
+    </div>
+    <span class="ayuda">Si la etiqueta sale corrida hacia un lado, imprime la prueba de alineación y ajusta el margen izquierdo hasta que el recuadro quede centrado. Para papel holográfico sube la oscuridad.</span>
+    <button class="btn sec" id="bPrueba" type="button">Imprimir prueba de alineación</button>
+    <button class="btn sec" value="cerrar">Cerrar</button>
+  </form>
+</dialog>
+
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+  "use strict";
+  let PX = 24;                // píxeles por milímetro (24 px/mm ≈ 600 ppp en pantalla; 8 px/mm = 203 ppp en la impresora)
+  const W = 50, H = 80;       // mm
+  const PT = 0.3528;          // mm por punto tipográfico
+
+  const PLANTILLA = {
+    nombre: "NUEVA FRAGANCIA", lema: "Suave · Limpio · Sereno", emblema: "flor",
+    concentracion: "15 %", volumen: "250 ml", ingredientes: "fragancia concentrada, aceites esenciales."
+  };
+
+  // ---------------------------------------------------------------- Estado
+  let fragancias = [];        // [{id, ...datos}]
+  let actual = null;          // id seleccionado o null (nueva)
+  let borrador = { ...PLANTILLA };
+  let db = null, col = null, modoLocal = false;
+  const $ = (id) => document.getElementById(id);
+
+  // ---------------------------------------------------------------- Dibujo
+  // Coordenadas en mm con el origen abajo a la izquierda (como en el archivo LaTeX).
+  function crearPluma(ctx) {
+    const Y = (y) => H - y;
+    return {
+      ctx, Y,
+      linea(x1, y1, x2, y2, lw) { ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(x1, Y(y1)); ctx.lineTo(x2, Y(y2)); ctx.stroke(); },
+      rect(x1, y1, x2, y2, lw) { ctx.lineWidth = lw; ctx.strokeRect(x1, Y(y2), x2 - x1, y2 - y1); },
+      punto(x, y, r, color = "#000") { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, Y(y), r, 0, Math.PI * 2); ctx.fill(); },
+      aro(x, y, r, lw) { ctx.lineWidth = lw; ctx.beginPath(); ctx.arc(x, Y(y), r, 0, Math.PI * 2); ctx.stroke(); },
+      rombo(x, y, r) { ctx.fillStyle = "#000"; ctx.beginPath(); ctx.moveTo(x - r, Y(y)); ctx.lineTo(x, Y(y + r)); ctx.lineTo(x + r, Y(y)); ctx.lineTo(x, Y(y - r)); ctx.closePath(); ctx.fill(); },
+      destello(x, y, s) {
+        ctx.fillStyle = "#000"; ctx.beginPath();
+        const p = [[0, s], [-.22 * s, .22 * s], [-s, 0], [-.22 * s, -.22 * s], [0, -s], [.22 * s, -.22 * s], [s, 0], [.22 * s, .22 * s]];
+        p.forEach(([dx, dy], i) => i ? ctx.lineTo(x + dx, Y(y + dy)) : ctx.moveTo(x + dx, Y(y + dy)));
+        ctx.closePath(); ctx.fill();
+      },
+      texto(t, x, y, pt, font, { color = "#000", espaciado = 0, align = "center" } = {}) {
+        ctx.fillStyle = color; ctx.textBaseline = "middle";
+        ctx.font = font.replace("{s}", (pt * PT).toFixed(3) + "px");
+        if (!espaciado) { ctx.textAlign = align; ctx.fillText(t, x, Y(y)); return; }
+        const chars = [...t], ws = chars.map((c) => ctx.measureText(c).width);
+        const total = ws.reduce((a, b) => a + b, 0) + espaciado * (chars.length - 1);
+        let cx = align === "center" ? x - total / 2 : x;
+        ctx.textAlign = "left";
+        chars.forEach((c, i) => { ctx.fillText(c, cx, Y(y)); cx += ws[i] + espaciado; });
+      },
+      ancho(t, pt, font) { ctx.font = font.replace("{s}", (pt * PT).toFixed(3) + "px"); return ctx.measureText(t).width; }
+    };
+  }
+
+  const F_SERIF = "700 {s} Cinzel, Georgia, serif";
+  const F_SERIF_MIN = "600 {s} Cinzel, Georgia, serif";
+  const F_SANS = "800 {s} Archivo, Arial, sans-serif";
+  const F_SANS_B = "700 {s} Archivo, Arial, sans-serif";
+  const F_ITAL = "italic 700 {s} 'EB Garamond', Georgia, serif";
+
+  // ---- Emblemas: dibujados en unidades locales con y hacia arriba, centrados en (0,0)
+  function bez(ctx, pts) { // pts: [x0,y0, c1x,c1y, c2x,c2y, x,y, c1x,...]
+    ctx.moveTo(pts[0], pts[1]);
+    for (let i = 2; i < pts.length; i += 6) ctx.bezierCurveTo(pts[i], pts[i + 1], pts[i + 2], pts[i + 3], pts[i + 4], pts[i + 5]);
+  }
+  function contorno(ctx, lw, dibujar) { ctx.beginPath(); dibujar(); ctx.closePath(); ctx.fillStyle = "#fff"; ctx.fill(); ctx.lineWidth = lw; ctx.stroke(); }
+  function trazo(ctx, lw, dibujar) { ctx.beginPath(); dibujar(); ctx.lineWidth = lw; ctx.stroke(); }
+  function hojaEn(ctx, x, y, ang, esc, lwC, lwN) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang * Math.PI / 180); ctx.scale(esc, esc);
+    contorno(ctx, lwC / esc, () => bez(ctx, [0, 0, 1.1, 1.05, 2.9, 1.05, 3.9, 0, 2.9, -1.05, 1.1, -1.05, 0, 0]));
+    trazo(ctx, lwN / esc, () => { ctx.moveTo(.45, 0); ctx.lineTo(3.2, 0); });
+    ctx.restore();
+  }
+
+  const EMBLEMAS = {
+    flor: { nombre: "Flor", dibujar(ctx, k) {
+      const C = .85 / k, N = .5 / k;
+      trazo(ctx, 1.1 / k, () => bez(ctx, [0, .3, .2, -1.5, -.3, -3.2, 0, -4.55]));
+      contorno(ctx, .8 / k, () => bez(ctx, [.05, -2.6, .9, -1.6, 2.6, -1.6, 3.4, -2.3, 2.6, -3.3, .9, -3.3, .05, -2.6]));
+      contorno(ctx, .8 / k, () => bez(ctx, [-.1, -3.6, -.9, -2.7, -2.5, -2.7, -3.2, -3.3, -2.5, -4.2, -.9, -4.2, -.1, -3.6]));
+      trazo(ctx, N, () => { ctx.moveTo(.4, -2.6); ctx.lineTo(2.6, -2.32); ctx.moveTo(-.4, -3.6); ctx.lineTo(-2.5, -3.32); });
+      ctx.save(); ctx.translate(0, 1.3);
+      for (let a = 0; a < 360; a += 60) {
+        ctx.save(); ctx.rotate((a + 90) * Math.PI / 180);
+        contorno(ctx, C, () => bez(ctx, [0, .95, .6, 1.5, 1.75, 2.6, 0, 3.25, -1.75, 2.6, -.6, 1.5, 0, .95]));
+        trazo(ctx, N, () => { ctx.moveTo(0, 1.55); ctx.lineTo(0, 2.6); });
+        ctx.restore();
+      }
+      contorno(ctx, .8 / k, () => ctx.arc(0, 0, .95, 0, Math.PI * 2));
+      ctx.beginPath(); ctx.arc(0, 0, .42, 0, Math.PI * 2); ctx.fillStyle = "#000"; ctx.fill();
+      ctx.restore();
+    }},
+    frutos: { nombre: "Frutos rojos", dibujar(ctx, k) {
+      ctx.translate(0, -.35); ctx.scale(.8, .8); k = k * .8;
+      const C = .8 / k;
+      trazo(ctx, .9 / k, () => { bez(ctx, [0, 4.2, .2, 2.6, -1.2, 1.2, -1.9, 0]); ctx.moveTo(0, 4.2); bez(ctx, [0, 4.2, .4, 2.6, 1.3, 1.3, 2, .3]); ctx.moveTo(0, 4.2); ctx.lineTo(.1, 1.8); });
+      hojaEn(ctx, 0, 4.2, 25, 1, .8 / k, .45 / k);
+      hojaEn(ctx, 0, 4.2, 160, .85, .8 / k, .45 / k);
+      const bayas = [[-1.9, -1.1, 1.75], [2.1, -.8, 1.75], [.1, .5, 1.6], [-.8, -3.6, 1.8], [1.6, -3.3, 1.5]];
+      bayas.forEach(([x, y, r]) => {
+        contorno(ctx, C, () => ctx.arc(x, y, r, 0, Math.PI * 2));
+        trazo(ctx, .5 / k, () => ctx.arc(x, y, r * .62, Math.PI * .6, Math.PI * .95));
+        ctx.beginPath(); ctx.arc(x + r * .25, y - r * .25, r * .16, 0, Math.PI * 2); ctx.fillStyle = "#000"; ctx.fill();
+      });
+    }},
+    lavanda: { nombre: "Lavanda", dibujar(ctx, k) {
+      const C = .7 / k;
+      [[-1.7, -12], [0, 0], [1.7, 12]].forEach(([dx, ang]) => {
+        ctx.save(); ctx.translate(0, -4.6); ctx.rotate(-ang * Math.PI / 180);
+        trazo(ctx, .8 / k, () => { ctx.moveTo(0, 0); ctx.lineTo(0, 9.2 - Math.abs(dx) * .6); });
+        const alto = 9.2 - Math.abs(dx) * .6;
+        for (let i = 0; i < 6; i++) {
+          const y = alto - .3 - i * .82, s = 1 - i * .05;
+          [-1, 1].forEach((lado) => {
+            ctx.save(); ctx.translate(lado * .42 * s, y); ctx.rotate(lado * -.45);
+            contorno(ctx, C, () => ctx.ellipse(0, 0, .38 * s, .62 * s, 0, 0, Math.PI * 2));
+            ctx.restore();
+          });
+        }
+        ctx.restore();
+      });
+      trazo(ctx, .8 / k, () => { bez(ctx, [-2.2, -2.6, -.8, -2.1, .8, -2.1, 2.2, -2.6]); });
+    }},
+    citrico: { nombre: "Cítrico", dibujar(ctx, k) {
+      ctx.save(); ctx.translate(-.3, -.7);
+      contorno(ctx, .9 / k, () => ctx.arc(0, 0, 3.7, 0, Math.PI * 2));
+      trazo(ctx, .5 / k, () => ctx.arc(0, 0, 3.05, 0, Math.PI * 2));
+      for (let i = 0; i < 9; i++) {
+        const a0 = (i / 9) * Math.PI * 2 + .06, a1 = ((i + 1) / 9) * Math.PI * 2 - .06;
+        contorno(ctx, .55 / k, () => { ctx.moveTo(Math.cos((a0 + a1) / 2) * .55, Math.sin((a0 + a1) / 2) * .55); ctx.arc(0, 0, 2.55, a0 + .03, a1 - .03); });
+      }
+      ctx.beginPath(); ctx.arc(0, 0, .38, 0, Math.PI * 2); ctx.fillStyle = "#000"; ctx.fill();
+      ctx.restore();
+      hojaEn(ctx, 1.9, 2.4, 40, .95, .8 / k, .45 / k);
+    }},
+    hoja: { nombre: "Hoja verde", dibujar(ctx, k) {
+      ctx.save(); ctx.rotate(-.35);
+      contorno(ctx, .9 / k, () => bez(ctx, [0, -4.6, 2.8, -2.8, 3.1, 1.8, 0, 4.7, -3.1, 1.8, -2.8, -2.8, 0, -4.6]));
+      trazo(ctx, .6 / k, () => {
+        ctx.moveTo(0, -4.9); ctx.lineTo(0, 3.8);
+        for (let i = 0; i < 4; i++) { const y = -2.6 + i * 1.6, w = 1.9 - Math.abs(i - 1.2) * .25; ctx.moveTo(0, y); ctx.lineTo(w, y + 1.1); ctx.moveTo(0, y); ctx.lineTo(-w, y + 1.1); }
+      });
+      ctx.restore();
+    }},
+    gota: { nombre: "Agua / brisa", dibujar(ctx, k) {
+      contorno(ctx, .9 / k, () => bez(ctx, [0, 4.6, 1.2, 2.4, 3.2, .3, 3.2, -1.6, 3.2, -3.5, 1.6, -4.6, 0, -4.6, -1.6, -4.6, -3.2, -3.5, -3.2, -1.6, -3.2, .3, -1.2, 2.4, 0, 4.6]));
+      trazo(ctx, .6 / k, () => {
+        for (let i = 0; i < 3; i++) { const y = -.6 - i * 1.2, w = 2.2 - i * .35; bez(ctx, [-w, y, -w / 2, y + .5, -w / 4, y + .5, 0, y]); bez(ctx, [0, y, w / 4, y - .5, w / 2, y - .5, w, y]); }
+      });
+      trazo(ctx, .5 / k, () => ctx.arc(0, -1.6, 2.3, Math.PI * .95, Math.PI * 1.25, true));
+    }},
+    luna: { nombre: "Noche", dibujar(ctx, k) {
+      const lw = .9 / k, O = [-.5, 0, 3.9], I = [.9, .9, 3.3];
+      ctx.save(); ctx.beginPath(); ctx.rect(-10, -10, 20, 20); ctx.arc(I[0], I[1], I[2], 0, Math.PI * 2); ctx.clip("evenodd");
+      trazo(ctx, lw, () => ctx.arc(O[0], O[1], O[2], 0, Math.PI * 2)); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.arc(O[0], O[1], O[2], 0, Math.PI * 2); ctx.clip();
+      trazo(ctx, lw, () => ctx.arc(I[0], I[1], I[2], 0, Math.PI * 2)); ctx.restore();
+      const star = (x, y, s) => { ctx.beginPath(); const p = [[0, s], [.22 * s, .22 * s], [s, 0], [.22 * s, -.22 * s], [0, -s], [-.22 * s, -.22 * s], [-s, 0], [-.22 * s, .22 * s]]; p.forEach(([a, b], i) => i ? ctx.lineTo(x + a, y + b) : ctx.moveTo(x + a, y + b)); ctx.closePath(); ctx.fillStyle = "#000"; ctx.fill(); };
+      star(3.1, 3.2, 1.1); star(3.9, -.4, .7);
+    }}
+  };
+
+  // ---- Emblemas propios de cada ambientador
+  function Hm(ctx, k) {
+    const C = .85 / k, N = .5 / k, PI2 = Math.PI * 2;
+    const o = {
+      C, N,
+      circ: (x, y, r, lw = C) => contorno(ctx, lw, () => ctx.arc(x, y, r, 0, PI2)),
+      ell: (x, y, rx, ry, rot = 0, lw = C) => contorno(ctx, lw, () => ctx.ellipse(x, y, rx, ry, rot, 0, PI2)),
+      poly: (pts, lw = C) => contorno(ctx, lw, () => pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))),
+      forma: (pts, lw = C) => contorno(ctx, lw, () => bez(ctx, pts)),
+      curva: (pts, lw = C) => trazo(ctx, lw, () => bez(ctx, pts)),
+      linea: (x1, y1, x2, y2, lw = N) => trazo(ctx, lw, () => { ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); }),
+      arco: (x, y, r, a0, a1, lw = N) => trazo(ctx, lw, () => ctx.arc(x, y, r, a0, a1)),
+      punto: (x, y, r) => { ctx.beginPath(); ctx.arc(x, y, r, 0, PI2); ctx.fillStyle = "#000"; ctx.fill(); },
+      semilla: (x, y, r, rot) => { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.beginPath(); ctx.ellipse(0, 0, r * .55, r, 0, 0, PI2); ctx.fillStyle = "#000"; ctx.fill(); ctx.restore(); },
+      estrella: (x, y, s) => { ctx.beginPath(); [[0, s], [.22 * s, .22 * s], [s, 0], [.22 * s, -.22 * s], [0, -s], [-.22 * s, -.22 * s], [-s, 0], [-.22 * s, .22 * s]].forEach(([a, b], i) => i ? ctx.lineTo(x + a, y + b) : ctx.moveTo(x + a, y + b)); ctx.closePath(); ctx.fillStyle = "#000"; ctx.fill(); },
+      hoja: (x, y, ang, esc) => hojaEn(ctx, x, y, ang, esc, .8 / k, .45 / k),
+      girar: (ang, fn) => { ctx.save(); ctx.rotate(ang * Math.PI / 180); fn(); ctx.restore(); },
+      mover: (x, y, esc, fn) => { ctx.save(); ctx.translate(x, y); ctx.scale(esc, esc); fn(); ctx.restore(); },
+      union: (circs, lw = C) => { // contorno de varios círculos unidos
+        circs.forEach(([x, y, r]) => trazo(ctx, lw, () => ctx.arc(x, y, r, 0, PI2)));
+        circs.forEach(([x, y, r]) => { ctx.beginPath(); ctx.arc(x, y, r - lw / 2, 0, PI2); ctx.fillStyle = "#fff"; ctx.fill(); });
+      }
+    };
+    return o;
+  }
+  function fresaEn(ctx, k, h, conLazo) {
+    h.forma([0, -4.4, -2.2, -3.6, -3.6, -.2, -2.6, 1.6, -1.6, 2.8, 1.6, 2.8, 2.6, 1.6, 3.6, -.2, 2.2, -3.6, 0, -4.4]);
+    [[-1.4, .8], [0, 1.2], [1.4, .8], [-2, -.6], [-.7, -.3], [.7, -.3], [2, -.6], [-1.3, -1.8], [0, -1.6], [1.3, -1.8], [-.6, -3], [.6, -3]].forEach(([x, y]) => h.semilla(x, y, .32, x * .15));
+    if (conLazo) {
+      h.forma([0, 2.6, -1.4, 4.4, -3.2, 3.8, -2.6, 2.4, -2.2, 1.6, -.8, 2.2, 0, 2.6]);
+      h.forma([0, 2.6, 1.4, 4.4, 3.2, 3.8, 2.6, 2.4, 2.2, 1.6, .8, 2.2, 0, 2.6]);
+      h.circ(0, 2.6, .55);
+    } else {
+      [-150, -110, -70, -30].forEach((a) => h.hoja(0, 2.3, -a, .42));
+      h.linea(0, 2.4, .35, 3.7, h.C);
+    }
+  }
+  Object.assign(EMBLEMAS, {
+    bambu: { nombre: "Bambú", dibujar(ctx, k) { const h = Hm(ctx, k);
+      [[-2.3, -4.6, 4.4], [.4, -4.6, 2.8]].forEach(([x, y0, y1]) => {
+        h.poly([[x, y0], [x + 1.5, y0], [x + 1.5, y1], [x, y1]]);
+        for (let y = y0 + 2; y < y1 - .4; y += 2.1) { h.linea(x - .2, y, x + 1.7, y, h.C); h.linea(x + .3, y + .35, x + 1.2, y + .35); }
+      });
+      h.hoja(1.9, 1.9, 35, .85); h.hoja(1.9, .1, -10, .7); h.hoja(-2.3, 2.8, 150, .85);
+    }},
+    bebe: { nombre: "Bebé", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.linea(-.4, -.4, -2.7, -3.3, 1.1 / k);
+      h.circ(-3.1, -3.85, .85);
+      h.circ(.9, 1.5, 2.5); h.circ(.9, 1.5, 1.5, h.N);
+      [[0, 1], [1.5, .4], [1.3, 2.3]].forEach(([x, y]) => h.punto(x, y, .3));
+      h.estrella(3.6, -1.9, .75); h.estrella(-2.6, 3, .55);
+    }},
+    brisa: { nombre: "Brisa marina", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.circ(2.2, 2.4, 1.3);
+      [-.4, -2, -3.6].forEach((y) => h.curva([-4.4, y, -3.3, y + 1.1, -2.2, y + 1.1, -1.1, y, 0, y - 1.1, 1.1, y - 1.1, 2.2, y, 3.3, y + 1.1, 4.4, y + .6, 4.4, y + .2]));
+      [[-2.6, 2.6, 1], [-.6, 3.8, .75]].forEach(([x, y, s]) => h.curva([x - s, y, x - s * .5, y + s * .6, x - .1, y + s * .3, x, y, x + .1, y + s * .3, x + s * .5, y + s * .6, x + s, y]));
+    }},
+    canela: { nombre: "Canela", dibujar(ctx, k) { const h = Hm(ctx, k);
+      [[-1.2, -16], [-3, -6]].forEach(([dy, ang]) => h.mover(-.6, dy, 1, () => h.girar(ang, () => {
+        h.poly([[-3.6, -.65], [3.6, -.65], [3.6, .65], [-3.6, .65]]);
+        h.linea(-3, .2, 3, .2);
+        h.ell(-3.6, 0, .5, .65); h.arco(-3.6, 0, .25, 0, 5);
+      })));
+      h.mover(2, 2.4, 1, () => { for (let a = 0; a < 360; a += 45) h.girar(a, () => h.ell(0, 1.05, .45, 1.05)); h.circ(0, 0, .55); h.punto(0, 0, .25); });
+    }},
+    carro: { nombre: "Carro nuevo", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.poly([[-4.4, -1.4], [4.4, -1.4], [4.4, .1], [3.4, .6], [1.9, .8], [.9, 2.5], [-1.9, 2.5], [-3, .8], [-4.2, .5]]);
+      h.poly([[-1.7, 2.1], [-.5, 2.1], [-.5, 1], [-2.4, 1]], h.N); h.poly([[0, 2.1], [.8, 2.1], [1.5, 1], [0, 1]], h.N);
+      h.linea(-.2, -.2, .6, -.2, h.C);
+      [-2.5, 2.5].forEach((x) => { h.circ(x, -1.5, 1.05); h.punto(x, -1.5, .35); });
+      h.estrella(3.4, 3.2, .85); h.estrella(-3.7, 3, .55); h.estrella(2.2, 4.2, .4);
+    }},
+    chicafresita: { nombre: "Chica fresita", dibujar(ctx, k) { const h = Hm(ctx, k); h.mover(0, -.3, .92, () => fresaEn(ctx, k / .92, Hm(ctx, k / .92), true)); }},
+    chicle: { nombre: "Chicle", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.circ(.6, 1, 3.4); h.arco(.6, 1, 2.5, Math.PI * .65, Math.PI * .95, h.C); h.punto(-1.2, 2.9, .3);
+      [[4.4, 3.6, 5, 4.4], [4.6, 1.2, 5.4, 1.2], [3.5, 4.8, 3.8, 5.5]].forEach(([a, b, c, d]) => h.linea(a, b, c, d, h.C));
+      h.mover(-2.8, -3.2, 1, () => h.girar(20, () => { h.poly([[-1.5, -.7], [1.5, -.7], [1.5, .7], [-1.5, .7]]); h.linea(-.5, -.7, -.5, .7); h.linea(.5, -.7, .5, .7); }));
+    }},
+    citronela: { nombre: "Citronela", dibujar(ctx, k) { const h = Hm(ctx, k);
+      [[-3.4, 3.2], [-1.6, 4.6], [0, 4.9], [1.7, 4.5], [3.5, 3]].forEach(([x, y]) => h.forma([0, -4.4, x * .25 - .35, 0, x * .7 - .4, y * .7, x, y, x * .7 + .4, y * .7, x * .25 + .35, 0, 0, -4.4]));
+      h.poly([[-1.1, -3.4], [1.1, -3.4], [1.1, -2.5], [-1.1, -2.5]]);
+    }},
+    cocovainilla: { nombre: "Coco vainilla", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.curva([.6, -4.5, 2.4, -3, 3.4, -.8, 3.6, 1.2]); h.curva([1.6, -4.6, 3.3, -3, 4.2, -.8, 4.3, 1.1]);
+      h.circ(-1, -1, 3.1); h.circ(-1, -1, 2.3, h.N);
+      [[-1.8, -.4], [-.2, -.2], [-1, -1.8]].forEach(([x, y]) => h.punto(x, y, .28));
+      h.mover(2.5, 2.6, 1, () => { for (let a = 0; a < 360; a += 72) h.girar(a, () => h.ell(0, .9, .5, .9)); h.circ(0, 0, .45); h.punto(0, 0, .2); });
+    }},
+    floralisimo: { nombre: "Floralísimo", dibujar(ctx, k) { const h = Hm(ctx, k);
+      [[-1.9, 1.2], [1.9, 1.2], [0, 2.9]].forEach(([x, y]) => h.curva([0, -4.3, x * .2, -1.5, x * .8, y - 1.2, x, y]));
+      [[-1.9, 1.2, 1], [1.9, 1.2, 1], [0, 2.9, 1.1]].forEach(([x, y, s]) => {
+        for (let a = 0; a < 360; a += 72) { const r = a * Math.PI / 180; h.circ(x + Math.cos(r) * .9 * s, y + Math.sin(r) * .9 * s, .72 * s); }
+        h.circ(x, y, .5 * s); h.punto(x, y, .22 * s);
+      });
+      h.forma([0, -2.6, -1.4, -2, -1.6, -3.4, 0, -2.6]); h.forma([0, -2.6, 1.4, -2, 1.6, -3.4, 0, -2.6]); h.circ(0, -2.6, .4);
+    }},
+    algodon: { nombre: "Flores de algodón", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.linea(0, -2, 0, -4.6, h.C);
+      [-60, -120, -90].forEach((a) => h.hoja(0, -1.6, a, .75));
+      h.union([[0, 1.6, 1.8], [-1.9, .3, 1.6], [1.9, .3, 1.6], [0, -.7, 1.5], [-1, 2.6, 1.1], [1.1, 2.6, 1.1]]);
+      [[0, 1.6], [-1.9, .3], [1.9, .3]].forEach(([x, y]) => h.arco(x, y, .7, Math.PI * .9, Math.PI * 1.6));
+    }},
+    fresa: { nombre: "Fresa", dibujar(ctx, k) { fresaEn(ctx, k, Hm(ctx, k), false); }},
+    kiwi: { nombre: "Kiwi", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.ell(0, 0, 4, 3.5); h.ell(0, 0, 3.3, 2.8, 0, h.N); h.ell(0, 0, 1.15, .85);
+      for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2; h.semilla(Math.cos(a) * 1.75, Math.sin(a) * 1.5, .3, a + Math.PI / 2); h.linea(Math.cos(a + .17) * 1.4, Math.sin(a + .17) * 1.15, Math.cos(a + .17) * 2.7, Math.sin(a + .17) * 2.25, .3 / k); }
+    }},
+    limon: { nombre: "Limón", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.girar(-20, () => { h.forma([-4.3, -.6, -3.8, 1.2, -2, 2.4, 0, 2.4, 2, 2.4, 3.8, 1.2, 4.3, -.6, 3.8, -2.2, 2, -3.2, 0, -3.2, -2, -3.2, -3.8, -2.2, -4.3, -.6]);
+        h.arco(0, -.4, 2.4, Math.PI * 1.1, Math.PI * 1.45, h.C); [[1.4, .6], [2.2, -1.2], [.4, -1.8], [-1.6, -1.4]].forEach(([x, y]) => h.punto(x, y, .2)); });
+      h.hoja(.2, 2.3, 40, .85);
+    }},
+    mandarina: { nombre: "Mandarina", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.linea(0, 1.9, 0, 3, h.C); h.hoja(0, 2.7, 25, .8); h.hoja(0, 2.7, 160, .65);
+      h.ell(0, -1, 3.8, 3.1); h.arco(0, -1, 2.6, Math.PI * .7, Math.PI * .95, h.C);
+      [[1.6, .4], [2.4, -1.2], [1, -2.6], [-1.2, -2.8], [-2.5, -1.4], [.2, -1.2]].forEach(([x, y]) => h.punto(x, y, .2));
+    }},
+    mangomelocoton: { nombre: "Mango melocotón", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.forma([-1.3, 3.6, -4.4, 3.4, -4.8, -1.8, -2.4, -3.6, -.8, -4.6, 1, -2.6, .2, .2, -.4, 1.8, .4, 3.4, -1.3, 3.6]);
+      h.arco(-2.4, .4, 1.8, Math.PI * .6, Math.PI * .95, h.C);
+      h.circ(2, -1.6, 2.4); h.curva([1.6, .8, .7, -.4, .8, -2.4, 1.6, -4]);
+      h.linea(1.7, .8, 1.9, 1.7, h.C); h.hoja(1.9, 1.5, 35, .7);
+    }},
+    manzana: { nombre: "Manzana verde", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.linea(0, 1.8, .45, 3.7, h.C);
+      h.forma([0, 1.8, 1.2, 3.2, 4, 3, 3.9, 0, 3.8, -3, 1.8, -4.6, .6, -4.2, .2, -4, -.2, -4, -.6, -4.2, -1.8, -4.6, -3.8, -3, -3.9, 0, -4, 3, -1.2, 3.2, 0, 1.8]);
+      h.hoja(.4, 3.1, 25, .8); h.arco(0, -.6, 2.6, Math.PI * .75, Math.PI * 1.05, h.C);
+    }},
+    maracuya: { nombre: "Maracuyá", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.curva([2.4, 3, 3.4, 4.2, 4.6, 4, 4.2, 3, 3.9, 2.3, 3.2, 2.8, 3.7, 3.3]);
+      h.circ(-.3, -.6, 3.8); h.circ(-.3, -.6, 3.1, h.N);
+      [[0, 0], [-1.3, .6], [1.2, .7], [-1.8, -.9], [1.6, -.8], [-.6, -2], [.8, -2.1], [-.2, 1.6], [-1.4, -2.6], [1.1, -3.1], [-2.2, .9], [2.2, .4]].forEach(([x, y]) => { h.circ(x - .3, y - .6, .55, h.N); h.punto(x - .3, y - .6, .24); });
+    }},
+    menta: { nombre: "Menta", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.linea(0, -4.6, 0, 3, h.C);
+      [[-2.6, 1.1], [-.4, .95], [1.7, .8]].forEach(([y, s]) => { h.hoja(0, y, 150, s); h.hoja(0, y, 30, s); });
+      h.hoja(0, 3, 90, .7);
+    }},
+    tabaco: { nombre: "Picadura de tabaco", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.curva([2.4, 1.6, 1.4, 2.6, 3.2, 3.2, 2.2, 4.6]); h.curva([3.4, 1.6, 2.8, 2.4, 4.2, 2.8, 3.6, 3.8]);
+      h.poly([[1.4, -.4], [-3.5, .7], [-4.4, 1.3], [-4.5, .6], [-3.7, -.1], [1.4, -1.5]]);
+      h.forma([1.1, 1.2, 1.1, -1.8, 1.6, -3.4, 2.7, -3.4, 3.8, -3.4, 4.3, -1.8, 4.3, 1.2]);
+      h.ell(2.7, 1.2, 1.6, .5);
+    }},
+    pino: { nombre: "Pino", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.poly([[-.6, -4.6], [.6, -4.6], [.6, -2.4], [-.6, -2.4]]);
+      h.poly([[-3.7, -2.6], [3.7, -2.6], [0, .8]]); h.poly([[-3, -.6], [3, -.6], [0, 2.7]]); h.poly([[-2.2, 1.3], [2.2, 1.3], [0, 4.6]]);
+      h.estrella(-3.2, 3.4, .55);
+    }},
+    sandalo: { nombre: "Sándalo", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.curva([-1.6, 2.2, -2.4, 3, -.8, 3.6, -1.6, 4.6]); h.curva([1.8, 1.8, 1, 2.6, 2.6, 3.2, 1.8, 4.3]);
+      h.linea(-.5, -2.2, -1.6, 2, .55 / k); h.linea(.6, -2.2, 1.8, 1.6, .55 / k);
+      h.punto(-1.6, 2.1, .3); h.punto(1.8, 1.7, .3);
+      h.forma([-3.2, -2.2, -3, -4.6, 3, -4.6, 3.2, -2.2]); h.linea(-3.6, -2.2, 3.6, -2.2, h.C);
+      [[-1.8, -3.4], [0, -3.6], [1.8, -3.4]].forEach(([x, y]) => h.punto(x, y, .22));
+    }},
+    sandia: { nombre: "Sandía", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.forma([0, 3.8, -1.4, 1.9, -2.8, 0, -4.2, -1.6, -2.6, -4.4, 2.6, -4.4, 4.2, -1.6, 2.8, 0, 1.4, 1.9, 0, 3.8]);
+      h.curva([-3.5, -1.9, -2.2, -3.6, 2.2, -3.6, 3.5, -1.9]);
+      [[0, 1.6], [-1.2, -.2], [1.2, -.2], [0, -1.2], [-2.2, -1.6], [2.2, -1.6]].forEach(([x, y]) => h.semilla(x, y, .38, 0));
+    }},
+    softazul: { nombre: "Softazul", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.girar(-32, () => {
+        h.forma([0, -3.2, 2.2, -2, 2.4, 2.6, 0, 4.7, -2.4, 2.6, -2.2, -2, 0, -3.2]);
+        h.linea(0, -5, 0, 4.2, h.C);
+        [-1.6, -.2, 1.2, 2.6].forEach((y) => { h.linea(0, y, 1.9, y + 1.1); h.linea(0, y + .4, -1.9, y + 1.5); });
+      });
+      h.estrella(3, -2.8, .8); h.estrella(-3.2, 2.4, .5);
+    }},
+    suavimex: { nombre: "Suavimex", dibujar(ctx, k) { const h = Hm(ctx, k);
+      [[-4.4, -2.6, 3.8], [-2.6, -.8, 3.5], [-.8, 1, 3.2]].forEach(([y0, y1, w]) => {
+        h.poly([[-w, y0], [w, y0], [w, y1], [-w, y1]]);
+        h.linea(-w + .9, y0, -w + .9, y1); h.linea(-w + .9, (y0 + y1) / 2, w - .5, (y0 + y1) / 2, .3 / k);
+      });
+      h.estrella(1.6, 3, 1); h.estrella(-1.2, 3.4, .6); h.estrella(3.2, 2, .45);
+    }},
+    talco: { nombre: "Talco", dibujar(ctx, k) { const h = Hm(ctx, k);
+      [[-1.9, 4.2], [0, 4.6], [1.9, 4.2], [-1, 4.9], [1, 5]].forEach(([x, y]) => h.punto(x, y, .25));
+      h.poly([[-1.2, 2.5], [1.2, 2.5], [1.2, 3.6], [-1.2, 3.6]]);
+      h.poly([[-2.3, 1.3], [-1.2, 2.5], [1.2, 2.5], [2.3, 1.3]]);
+      h.poly([[-2.3, -4.6], [2.3, -4.6], [2.3, 1.3], [-2.3, 1.3]]);
+      h.poly([[-1.5, -2.8], [1.5, -2.8], [1.5, -.2], [-1.5, -.2]], h.N); h.estrella(0, -1.5, .7);
+    }},
+    talcobebe: { nombre: "Talco bebé", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.forma([0, 2.2, -1.2, 3.8, -2.8, 3.4, -2.2, 2.3, -1.8, 1.6, -.6, 2, 0, 2.2]);
+      h.forma([0, 2.2, 1.2, 3.8, 2.8, 3.4, 2.2, 2.3, 1.8, 1.6, .6, 2, 0, 2.2]);
+      h.circ(0, -1.2, 3.3);
+      ctx.save(); ctx.setLineDash([.45, .45]); h.arco(0, -1.2, 2.5, 0, Math.PI * 2, .4 / k); ctx.restore();
+      h.circ(0, 2.2, .5);
+      [[-3.8, -3.8], [3.8, -3.6], [3.9, -.6]].forEach(([x, y]) => h.punto(x, y, .28)); h.estrella(-3.9, -.4, .55);
+    }},
+    tutti: { nombre: "Tutti frutti", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.mover(-2.3, 2.3, 1, () => { h.circ(0, 0, 1.6); h.circ(0, 0, 1.15, h.N); for (let a = 0; a < 6; a++) { const r = a * Math.PI / 3; h.linea(0, 0, Math.cos(r) * 1.1, Math.sin(r) * 1.1, .35 / k); } });
+      h.curva([-1.6, -2.4, -1.2, 0, -.2, 2, .9, 3]); h.curva([1.6, -2.9, 1.6, -.6, 1.2, 1.6, .9, 3]);
+      h.hoja(.9, 3, 10, .75);
+      [[-1.7, -2.6], [1.6, -3.1]].forEach(([x, y]) => { h.circ(x, y, 1.5); h.arco(x, y, 1, Math.PI * .6, Math.PI * .95, h.C); });
+      h.estrella(3.4, .6, .6);
+    }},
+    te: { nombre: "Té verde", dibujar(ctx, k) { const h = Hm(ctx, k);
+      h.ell(-.3, -4, 4, .7);
+      h.circ(2.8, -.9, 1.15);
+      h.forma([-3.4, .9, -3.4, -2.2, -1.9, -3.7, -.3, -3.7, 1.3, -3.7, 2.8, -2.2, 2.8, .9]);
+      h.linea(-3.4, .9, 2.8, .9, h.C);
+      h.hoja(-.3, 1.6, 75, .95);
+      h.curva([-2.2, 1.6, -3, 2.6, -1.6, 3.2, -2.4, 4.2]); h.curva([1.6, 1.6, .9, 2.6, 2.3, 3.2, 1.6, 4.2]);
+    }}
+  });
+
+  // Lema e ingredientes que acompañan a cada emblema
+  const TEXTOS = {"flor": {"lema": "Floral · Fresco · Luminoso", "ingredientes": "fragancia floral primaveral, aceites esenciales."}, "frutos": {"lema": "Dulce · Frutal · Envolvente", "ingredientes": "fragancia de frutos rojos, aceites esenciales."}, "lavanda": {"lema": "Herbal · Relajante · Sereno", "ingredientes": "fragancia de lavanda, aceites esenciales."}, "citrico": {"lema": "Cítrico · Dulce · Luminoso", "ingredientes": "fragancia de naranja, aceites esenciales."}, "hoja": {"lema": "Verde · Fresco · Natural", "ingredientes": "fragancia herbal verde, aceites esenciales."}, "gota": {"lema": "Fresco · Limpio · Acuático", "ingredientes": "fragancia acuática, aceites esenciales."}, "luna": {"lema": "Suave · Cálido · Sereno", "ingredientes": "fragancia suave nocturna, aceites esenciales."}, "bambu": {"lema": "Verde · Fresco · Sereno", "ingredientes": "fragancia de bambú, aceites esenciales."}, "bebe": {"lema": "Suave · Tierno · Limpio", "ingredientes": "fragancia suave de bebé, aceites esenciales."}, "brisa": {"lema": "Marino · Fresco · Libre", "ingredientes": "fragancia de brisa marina, aceites esenciales."}, "canela": {"lema": "Cálido · Especiado · Acogedor", "ingredientes": "fragancia de canela, aceites esenciales."}, "carro": {"lema": "Limpio · Moderno · Intenso", "ingredientes": "fragancia de carro nuevo, aceites esenciales."}, "chicafresita": {"lema": "Dulce · Frutal · Alegre", "ingredientes": "fragancia dulce de fresa, aceites esenciales."}, "chicle": {"lema": "Dulce · Divertido · Alegre", "ingredientes": "fragancia de chicle, aceites esenciales."}, "citronela": {"lema": "Cítrico · Herbal · Fresco", "ingredientes": "fragancia de citronela, aceites esenciales."}, "cocovainilla": {"lema": "Dulce · Cremoso · Cálido", "ingredientes": "fragancia de coco y vainilla, aceites esenciales."}, "floralisimo": {"lema": "Floral · Intenso · Radiante", "ingredientes": "fragancia de bouquet floral, aceites esenciales."}, "algodon": {"lema": "Suave · Limpio · Floral", "ingredientes": "fragancia de flores de algodón, aceites esenciales."}, "fresa": {"lema": "Dulce · Frutal · Jugoso", "ingredientes": "fragancia de fresa, aceites esenciales."}, "kiwi": {"lema": "Frutal · Fresco · Vibrante", "ingredientes": "fragancia de kiwi, aceites esenciales."}, "limon": {"lema": "Cítrico · Fresco · Vibrante", "ingredientes": "fragancia de limón, aceites esenciales."}, "mandarina": {"lema": "Cítrico · Dulce · Alegre", "ingredientes": "fragancia de mandarina, aceites esenciales."}, "mangomelocoton": {"lema": "Tropical · Dulce · Jugoso", "ingredientes": "fragancia de mango y melocotón, aceites esenciales."}, "manzana": {"lema": "Frutal · Fresco · Crujiente", "ingredientes": "fragancia de manzana verde, aceites esenciales."}, "maracuya": {"lema": "Tropical · Ácido · Vibrante", "ingredientes": "fragancia de maracuyá, aceites esenciales."}, "menta": {"lema": "Herbal · Fresco · Revitalizante", "ingredientes": "fragancia de menta, aceites esenciales."}, "tabaco": {"lema": "Cálido · Amaderado · Profundo", "ingredientes": "fragancia de picadura de tabaco, aceites esenciales."}, "pino": {"lema": "Amaderado · Fresco · Natural", "ingredientes": "fragancia de pino, aceites esenciales."}, "sandalo": {"lema": "Amaderado · Cálido · Sereno", "ingredientes": "fragancia de sándalo, aceites esenciales."}, "sandia": {"lema": "Frutal · Fresco · Jugoso", "ingredientes": "fragancia de sandía, aceites esenciales."}, "softazul": {"lema": "Limpio · Suave · Fresco", "ingredientes": "fragancia de ropa limpia, aceites esenciales."}, "suavimex": {"lema": "Limpio · Suave · Envolvente", "ingredientes": "fragancia de suavizante, aceites esenciales."}, "talco": {"lema": "Suave · Limpio · Delicado", "ingredientes": "fragancia de talco, aceites esenciales."}, "talcobebe": {"lema": "Suave · Tierno · Delicado", "ingredientes": "fragancia de talco de bebé, aceites esenciales."}, "tutti": {"lema": "Frutal · Dulce · Alegre", "ingredientes": "fragancia tutti frutti, aceites esenciales."}, "te": {"lema": "Herbal · Verde · Sereno", "ingredientes": "fragancia de té verde, aceites esenciales."}};
+
+  function dibujarEmblema(ctx, clave, cx, cyCanvas, esc) {
+    const e = EMBLEMAS[clave] || EMBLEMAS.flor;
+    ctx.save(); ctx.translate(cx, cyCanvas); ctx.scale(esc, -esc);
+    ctx.strokeStyle = "#000"; ctx.lineJoin = "round"; ctx.lineCap = "round";
+    e.dibujar(ctx, esc);
+    ctx.restore();
+  }
+
+  function envolver(p, texto, pt, font, max) {
+    const pal = texto.split(/\s+/).filter(Boolean), lineas = []; let l = "";
+    pal.forEach((w) => { const t = l ? l + " " + w : w; if (p.ancho(t, pt, font) <= max || !l) l = t; else { lineas.push(l); l = w; } });
+    if (l) lineas.push(l); return lineas;
+  }
+
+  function dibujarEtiqueta(canvas, f) {
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(PX, 0, 0, PX, 0, 0);
+    ctx.strokeStyle = "#000"; ctx.lineCap = "butt";
+    const p = crearPluma(ctx);
+
+    // 1. Marco
+    p.rect(1.5, 1.5, 48.5, 78.5, .6);
+    p.rect(3.6, 3.6, 46.4, 76.4, .3);
+    for (let y = 6; y <= 74; y += 3) { p.punto(2.55, y, .25); p.punto(47.45, y, .25); }
+    for (let x = 7; x <= 43; x += 3) { p.punto(x, 2.55, .25); p.punto(x, 77.45, .25); }
+    [[2.55, 2.55], [47.45, 2.55], [47.45, 77.45], [2.55, 77.45]].forEach(([x, y]) => p.rombo(x, y, .75));
+
+    // 2. Cabecera
+    p.texto("· Officina Arcana ·", 25, 74.2, 5.5, F_SERIF_MIN, { espaciado: .12 });
+    p.texto("FRESCORA", 25, 69.6, 10.5, F_SERIF, { espaciado: 1.05 });
+    p.linea(10.5, 66.2, 21.6, 66.2, .3); p.linea(28.4, 66.2, 39.5, 66.2, .3);
+    p.aro(25, 66.2, 1.15, .4); p.punto(25, 66.2, .38);
+    p.texto("NATURA", 25, 63.2, 5.5, F_SANS, { espaciado: .75 });
+
+    // 3. Emblema
+    dibujarEmblema(ctx, f.emblema, 25, H - 47.6, 2.6);
+
+    // 4. Nombre
+    p.texto("Elixir de", 25, 32.4, 9, F_ITAL);
+    ctx.fillStyle = "#000"; ctx.beginPath();
+    [[7.5, 24.1], [42.5, 24.1], [45, 26.85], [42.5, 29.6], [7.5, 29.6], [5, 26.85]].forEach(([x, y], i) => i ? ctx.lineTo(x, p.Y(y)) : ctx.moveTo(x, p.Y(y)));
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#fff"; p.linea(8.5, 24.95, 41.5, 24.95, .3); p.linea(8.5, 28.75, 41.5, 28.75, .3); ctx.strokeStyle = "#000";
+    const nombre = (f.nombre || "").toUpperCase().trim() || "SIN NOMBRE";
+    let ptN = 10; while (ptN > 6 && p.ancho(nombre, ptN, F_SANS) > 33) ptN -= .25;
+    p.texto(nombre, 25, 26.85, ptN, F_SANS, { color: "#fff" });
+
+    // Lema
+    const lema = (f.lema || "").toUpperCase().trim();
+    if (lema) { let ptL = 6; while (ptL > 4.6 && p.ancho(lema, ptL, F_SANS) > 38) ptL -= .2; p.texto(lema, 25, 21.9, ptL, F_SANS); }
+
+    // 5. Concentración
+    const conc = "ESENCIA AL " + ((f.concentracion || "").trim() || "—");
+    const wC = p.ancho(conc, 6.5, F_SANS);
+    p.texto(conc, 25, 19.1, 6.5, F_SANS);
+    p.linea(7, 19.1, 25 - wC / 2 - 1.2, 19.1, .3); p.linea(25 + wC / 2 + 1.2, 19.1, 43, 19.1, .3);
+    p.destello(7, 19.1, .8); p.destello(43, 19.1, .8);
+
+    // Advertencias + ingredientes
+    let ptA = 5.4, lineas;
+    for (;;) {
+      lineas = ["Uso ambiental. No ingerir. Mantener", "fuera del alcance de los niños.",
+        ...envolver(p, "Ingredientes: " + ((f.ingredientes || "").trim() || "—"), ptA, F_SANS_B, 35)];
+      if (lineas.length <= 4 || ptA <= 4.6) break; ptA -= .2;
+    }
+    const paso = ptA * 1.11 * PT, y0 = 13.6 + paso * (lineas.length - 1) / 2;
+    lineas.forEach((l, i) => p.texto(l, 25, y0 - i * paso, ptA, F_SANS_B));
+
+    // 6. Volumen
+    p.linea(12, 8.7, 38, 8.7, .3);
+    const vol = (f.volumen || "").trim() || "—";
+    const wV = p.ancho(vol, 8.5, F_SANS), wE = p.ancho("e", 7, F_SANS);
+    const x0 = 25 - (wV + .6 + wE) / 2;
+    p.texto(vol, x0, 6.0, 8.5, F_SANS, { align: "left" });
+    p.texto("e", x0 + wV + .6, 5.85, 7, F_SANS, { align: "left" });
+
+    umbral(canvas);
+  }
+
+  // Convierte a 1 bit: negro puro o blanco puro, como lo imprimirá la térmica.
+  function umbral(canvas) {
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height), d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = (d[i] * .3 + d[i + 1] * .59 + d[i + 2] * .11) < 140 ? 0 : 255;
+      d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  // ---------------------------------------------------------------- Interfaz
+  const campos = ["nombre", "lema", "concentracion", "volumen", "ingredientes"];
+  const lienzo = $("lienzo");
+  let aviso = (t) => { $("aviso").textContent = t; };
+
+  function pintar() { dibujarEtiqueta(lienzo, borrador); }
+
+  function cargarEnFicha(f) {
+    borrador = { ...PLANTILLA, ...f };
+    delete borrador.id;
+    campos.forEach((c) => { $(c).value = borrador[c] || ""; });
+    marcarEmblema();
+    $("confirmar").hidden = true;
+    $("bEliminar").hidden = !actual;
+    $("bDuplicar").hidden = !actual;
+    pintar();
+  }
+
+  function pintarCatalogo() {
+    const cont = $("catalogo"); cont.textContent = "";
+    if (!fragancias.length) {
+      const s = document.createElement("span"); s.className = "vacio";
+      s.textContent = modoLocal ? "Aún no hay fragancias guardadas aquí." : "Tu catálogo está vacío. Llena la ficha y toca “Guardar ficha”.";
+      cont.appendChild(s);
+    }
+    fragancias.forEach((f) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip";
+      b.textContent = f.nombre || "Sin nombre"; b.setAttribute("aria-pressed", String(f.id === actual));
+      b.addEventListener("click", () => { actual = f.id; pintarCatalogo(); cargarEnFicha(f); aviso(""); });
+      cont.appendChild(b);
+    });
+    const n = document.createElement("button"); n.type = "button"; n.className = "chip nueva";
+    n.textContent = "+ Nueva"; n.setAttribute("aria-pressed", String(actual === null));
+    n.addEventListener("click", () => { actual = null; pintarCatalogo(); cargarEnFicha(PLANTILLA); $("nombre").focus(); $("nombre").select(); aviso("Ficha nueva. Escribe el nombre y guarda."); });
+    cont.appendChild(n);
+  }
+
+  function construirEmblemas() {
+    const cont = $("emblemas");
+    Object.entries(EMBLEMAS).forEach(([clave, e]) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "emb"; b.dataset.clave = clave;
+      b.setAttribute("aria-pressed", "false");
+      const c = document.createElement("canvas"); c.width = 104; c.height = 104;
+      const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 104, 104);
+      dibujarEmblema(ctx, clave, 52, 52, 10.2);
+      const s = document.createElement("span"); s.textContent = e.nombre;
+      b.append(c, s);
+      b.addEventListener("click", () => {
+        borrador.emblema = clave;
+        const t = TEXTOS[clave];
+        if (t) { borrador.lema = t.lema; borrador.ingredientes = t.ingredientes; $("lema").value = t.lema; $("ingredientes").value = t.ingredientes; }
+        marcarEmblema(); pintar();
+        aviso(t ? "Lema e ingredientes de " + e.nombre + " listos. Toca “Guardar ficha” para conservarlos." : "");
+      });
+      cont.appendChild(b);
+    });
+  }
+  function marcarEmblema() {
+    document.querySelectorAll(".emb").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.clave === borrador.emblema)));
+  }
+
+  campos.forEach((c) => $(c).addEventListener("input", () => { borrador[c] = $(c).value; pintar(); }));
+
+  // Fondo de la vista previa
+  function fondo(holo) {
+    $("papel").classList.toggle("holo", holo);
+    $("fHolo").setAttribute("aria-pressed", String(holo));
+    $("fBlanco").setAttribute("aria-pressed", String(!holo));
+    try { localStorage.setItem("frescora-fondo", holo ? "holo" : "blanco"); } catch (e) {}
+  }
+  $("fHolo").addEventListener("click", () => fondo(true));
+  $("fBlanco").addEventListener("click", () => fondo(false));
+  try { fondo(localStorage.getItem("frescora-fondo") !== "blanco"); } catch (e) { fondo(true); }
+
+  // ---------------------------------------------------------------- Guardar PNG / PDF / Compartir
+  async function archivo(canvas, wmm, hmm, base, tipo) {
+    if (tipo === "pdf") {
+      const doc = new window.jspdf.jsPDF({ unit: "mm", format: [wmm, hmm], orientation: wmm > hmm ? "landscape" : "portrait", compress: true });
+      doc.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, wmm, hmm, undefined, "NONE");
+      return new File([doc.output("blob")], base + ".pdf", { type: "application/pdf" });
+    }
+    const blob = await new Promise((r) => canvas.toBlob(r, "image/png"));
+    return new File([blob], base + ".png", { type: "image/png" });
+  }
+  async function guardarEtiqueta(canvas, wmm, hmm, base, tipo, decir, ok) {
+    try {
+      if (tipo === "compartir") {
+        const f = await archivo(canvas, wmm, hmm, base, "png");
+        if (navigator.canShare && navigator.canShare({ files: [f] })) {
+          await navigator.share({ files: [f], title: base });
+          decir("Elige la app de Phomemo para imprimir a " + wmm + " × " + hmm + " mm.");
+        } else decir("Este navegador no permite compartir archivos. Usa PNG o PDF.");
+        return;
+      }
+      const f = await archivo(canvas, wmm, hmm, base, tipo);
+      const url = URL.createObjectURL(f), a = document.createElement("a");
+      a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      decir((tipo === "pdf" ? "PDF guardado en Descargas. " : "Imagen guardada en Descargas. ") + ok);
+    } catch (e) {
+      if (e && e.name === "AbortError") return;
+      decir("No se pudo preparar el archivo. Inténtalo de nuevo.");
+    }
+  }
+  const baseAmb = () => "frescora-" + (slug(borrador.nombre) || "etiqueta");
+  $("bGuardarPng").addEventListener("click", () => guardarEtiqueta(lienzo, 50, 80, baseAmb(), "png", aviso, "Imprímela en la app de Phomemo con etiqueta de 50 × 80 mm."));
+  $("bGuardarPdf").addEventListener("click", () => guardarEtiqueta(lienzo, 50, 80, baseAmb(), "pdf", aviso, "La página mide 50 × 80 mm; imprímelo al 100 %, sin ajustar a la página."));
+  $("bCompartir").addEventListener("click", () => guardarEtiqueta(lienzo, 50, 80, baseAmb(), "compartir", aviso, ""));
+
+  // ---------------------------------------------------------------- Catálogo (db o local)
+  function datosLimpios() {
+    const o = {}; campos.forEach((c) => { o[c] = String(borrador[c] || "").trim(); });
+    o.emblema = borrador.emblema || "flor"; o.nombre = o.nombre.toUpperCase(); return o;
+  }
+
+  function guardarLocal() { try { localStorage.setItem("frescora-catalogo", JSON.stringify(fragancias)); } catch (e) {} }
+
+  $("ficha").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const datos = datosLimpios();
+    if (!datos.nombre) { aviso("Escribe el nombre de la fragancia."); $("nombre").focus(); return; }
+    $("bGuardar").disabled = true;
+    try {
+      if (col) {
+        if (actual) { await col.doc(actual).set(datos); }
+        else { const ref = await col.add(datos); actual = ref.id; }
+      } else {
+        if (!actual) actual = "l" + Date.now().toString(36);
+        const i = fragancias.findIndex((f) => f.id === actual);
+        if (i >= 0) fragancias[i] = { id: actual, ...datos }; else fragancias.push({ id: actual, ...datos });
+        fragancias.sort((a, b) => a.nombre.localeCompare(b.nombre)); guardarLocal(); pintarCatalogo();
+      }
+      $("bEliminar").hidden = false; $("bDuplicar").hidden = false;
+      aviso("Ficha guardada: " + datos.nombre + ".");
+    } catch (e) {
+      aviso(e && e.code === "permission_denied" ? "No tienes permiso para editar este catálogo." : "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.");
+    } finally { $("bGuardar").disabled = false; }
+  });
+
+  $("bDuplicar").addEventListener("click", () => {
+    const copia = { ...datosLimpios(), nombre: "" };
+    actual = null; pintarCatalogo(); cargarEnFicha(copia); $("nombre").focus();
+    aviso("Copia lista con el mismo diseño. Escribe el nuevo nombre y guarda.");
+  });
+
+  $("bEliminar").addEventListener("click", () => {
+    $("confirmarTxt").textContent = "¿Eliminar " + (borrador.nombre || "esta fragancia") + " del catálogo?";
+    $("confirmar").hidden = false; $("bNo").focus();
+  });
+  $("bNo").addEventListener("click", () => { $("confirmar").hidden = true; });
+  $("bSi").addEventListener("click", async () => {
+    if (!actual) return;
+    const id = actual, nombre = borrador.nombre;
+    try {
+      if (col) await col.doc(id).delete();
+      else { fragancias = fragancias.filter((f) => f.id !== id); guardarLocal(); }
+      actual = null; aviso(nombre + " se eliminó del catálogo.");
+      if (!col) pintarCatalogo();
+      const sig = fragancias.find((f) => f.id !== id);
+      if (sig) { actual = sig.id; cargarEnFicha(sig); } else cargarEnFicha(PLANTILLA);
+      pintarCatalogo();
+    } catch (e) { aviso("No se pudo eliminar. Inténtalo de nuevo."); }
+  });
+
+  function recibir(lista) {
+    fragancias = lista;
+    if (actual && !fragancias.some((f) => f.id === actual)) actual = null;
+    if (actual === null && fragancias.length && !$("nombre").matches(":focus") && primeraCarga) {
+      actual = fragancias[0].id; cargarEnFicha(fragancias[0]);
+    }
+    if (fragancias.length) primeraCarga = false;
+    pintarCatalogo();
+  }
+  let primeraCarga = true;
+
+  function activarLocal(motivo) {
+    modoLocal = true;
+    $("estado").textContent = motivo;
+    let lista = [];
+    try { lista = JSON.parse(localStorage.getItem("frescora-catalogo") || "[]"); } catch (e) {}
+    recibir(Array.isArray(lista) ? lista : []);
+  }
+
+  // ================================================================ PERFUMES
+  const F_TIMES = "700 {s} Tinos, 'Times New Roman', Times, serif";
+  const P_VACIO = { marca: "", nombre: "", genero: "WOMEN" };
+  let perfumes = [], pActual = null, pBorrador = { ...P_VACIO }, pCol = null, pLocal = false, pPrimera = true;
+  let formato = "par";
+  const lienzoP = $("lienzoP");
+
+  function pDatos(id) {
+    if (id === "__actual" || (id && id === pActual)) return pBorrador;
+    return perfumes.find((p) => p.id === id) || null;
+  }
+
+  // Mejor reparto en 1 o 2 líneas al tamaño más grande que quepa.
+  function ajustar(p, texto, maxW, maxH, maxPt, minPt, font) {
+    const t = (texto || "").toUpperCase().trim();
+    const forzado = t.includes("/");
+    const pal = t.replace(/\//g, " ").split(/\s+/).filter(Boolean);
+    const fijo = forzado ? t.split("/").map((x) => x.trim()).filter(Boolean).slice(0, 3) : null;
+    const repartos = (n) => {
+      if (n === 1) return [[pal.join(" ")]];
+      const out = [];
+      if (n === 2) for (let i = 1; i < pal.length; i++) out.push([pal.slice(0, i).join(" "), pal.slice(i).join(" ")]);
+      if (n === 3) for (let i = 1; i < pal.length - 1; i++) for (let j = i + 1; j < pal.length; j++)
+        out.push([pal.slice(0, i).join(" "), pal.slice(i, j).join(" "), pal.slice(j).join(" ")]);
+      return out;
+    };
+    for (let pt = maxPt; pt >= minPt; pt -= .25) {
+      const alto = (n) => n * pt * PT * 1.02;
+      if (fijo) {
+        if (alto(fijo.length) <= maxH && Math.max(...fijo.map((l) => p.ancho(l, pt, font))) <= maxW) return { lineas: fijo, pt };
+        continue;
+      }
+      for (let n = 1; n <= Math.min(3, pal.length); n++) {
+        if (alto(n) > maxH) break;
+        let mejor = null, mw = Infinity;
+        repartos(n).forEach((c) => { const w = Math.max(...c.map((l) => p.ancho(l, pt, font))); if (w < mw) { mw = w; mejor = c; } });
+        if (mejor && mw <= maxW) return { lineas: mejor, pt };
+      }
+    }
+    return { lineas: fijo || [pal.join(" ")], pt: minPt };
+  }
+
+  // Dibuja una etiqueta de perfume de `lado` mm, con esquina superior izquierda en (ox, oy) mm de lienzo.
+  function dibujarPerfume(ctx, ox, oy, lado, f, volumen) {
+    const s = lado / 50;
+    const p = crearPluma(ctx);
+    const X = (u) => ox + u * s, Yc = (v) => oy + (50 - v) * s;
+    const txt = (t, u, v, pt, font, esp = 0) => p.texto(t, X(u), H - Yc(v), pt * s, font, { espaciado: esp * s });
+    ctx.strokeStyle = "#000";
+    // Bordes
+    ctx.lineWidth = lado >= 40 ? .55 : .5;
+    ctx.strokeRect(X(1.5), Yc(48.5), 47 * s, 47 * s);
+    if (lado >= 40) { ctx.lineWidth = .22; ctx.strokeRect(X(2.4), Yc(47.6), 45.2 * s, 45.2 * s); }
+    else { ctx.lineWidth = .2; ctx.strokeRect(X(3), Yc(47), 44 * s, 44 * s); }
+
+    if (!f) { txt("ELIGE UN PERFUME", 25, 25, 9, F_SANS); return; }
+    txt("INSPIRED BY", 25, 43.6, 7.2, F_SANS, 1.05);
+
+    // Casa / diseñador
+    const m = ajustar({ ancho: (t, pt, fo) => p.ancho(t, pt * s, fo) / s }, f.marca, 38, 9.4, 12.5, 5, F_TIMES);
+    const pasoM = m.pt * PT * 1.02;
+    m.lineas.forEach((l, i) => txt(l, 25, 35.6 + pasoM * (m.lineas.length - 1) / 2 - i * pasoM, m.pt, F_TIMES));
+
+    // Separador con sol (sello de la casa Frescora)
+    const ySep = 28.9;
+    p.linea(X(13), H - Yc(ySep), X(22.6), H - Yc(ySep), lado >= 40 ? .3 : .25);
+    p.linea(X(27.4), H - Yc(ySep), X(37), H - Yc(ySep), lado >= 40 ? .3 : .25);
+    p.aro(X(25), H - Yc(ySep), 1.05 * s, lado >= 40 ? .35 : .28);
+    p.punto(X(25), H - Yc(ySep), .38 * s);
+
+    // Nombre del perfume (protagonista)
+    const n = ajustar({ ancho: (t, pt, fo) => p.ancho(t, pt * s, fo) / s }, f.nombre, 42, 14.2, 26, 6, F_TIMES);
+    const pasoN = n.pt * PT * 1.02;
+    n.lineas.forEach((l, i) => txt(l, 25, 19.6 + pasoN * (n.lineas.length - 1) / 2 - i * pasoN, n.pt, F_TIMES));
+
+    // Línea y tamaño
+    const gen = (f.genero || "").toUpperCase().trim();
+    if (gen) { let pt = 11.5; while (pt > 7 && p.ancho(gen, pt * s, F_TIMES) / s > 36) pt -= .25; txt(gen, 25, 10.4, pt, F_TIMES); }
+    txt(volumen, 25, 5.4, 10.5, F_SANS, .25);
+  }
+
+  function pintarHoja(dest = lienzoP) {
+    const par = formato === "par";
+    const w = 50 * PX, h = (par ? 25 : 50) * PX;
+    if (dest.width !== w || dest.height !== h) { dest.width = w; dest.height = h; }
+    if (dest === lienzoP) $("papelP").classList.toggle("ancho", par);
+    if (dest === lienzoP) $("medidaP").textContent = (par ? "hoja 50 × 25 mm" : "50 × 50 mm") + " · alta resolución (600 ppp) · solo negro puro";
+    const ctx = dest.getContext("2d");
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    ctx.setTransform(PX, 0, 0, PX, 0, 0);
+    if (par) {
+      dibujarPerfume(ctx, 0, 0, 25, pDatos($("sIzq").value), $("vIzq").value);
+      dibujarPerfume(ctx, 25, 0, 25, pDatos($("sDer").value), $("vDer").value);
+    } else {
+      dibujarPerfume(ctx, 0, 0, 50, pDatos($("sGrande").value), $("vGrande").value);
+    }
+    umbral(dest);
+  }
+
+  const GRUPOS = [["MEN", "Caballero"], ["WOMEN", "Dama"], ["", "Otros"]];
+  function grupoDe(g) { g = (g || "").toUpperCase(); return g === "MEN" || g === "FOR HIM" ? "MEN" : g === "WOMEN" || g === "FOR HER" ? "WOMEN" : ""; }
+  function opcionesPerfumes() {
+    ["sIzq", "sDer", "sGrande"].forEach((id) => {
+      const sel = $(id), previo = sel.value; sel.textContent = "";
+      const lista = perfumes.slice();
+      if (pActual === null && (pBorrador.nombre || pBorrador.marca)) lista.unshift({ id: "__actual", ...pBorrador, nuevo: true });
+      if (!lista.length) { const o = document.createElement("option"); o.value = ""; o.textContent = "Biblioteca vacía"; sel.appendChild(o); }
+      const etiqueta = (f) => { const d = f.id === pActual ? pBorrador : f; return (d.nombre || "Sin nombre").replace(/\//g, " ") + " · " + (d.marca || "—") + (f.nuevo ? " (sin guardar)" : ""); };
+      const nuevos = lista.filter((f) => f.nuevo);
+      nuevos.forEach((f) => { const o = document.createElement("option"); o.value = f.id; o.textContent = etiqueta(f); sel.appendChild(o); });
+      GRUPOS.forEach(([g, titulo]) => {
+        const items = lista.filter((f) => !f.nuevo && grupoDe((f.id === pActual ? pBorrador : f).genero) === g);
+        if (!items.length) return;
+        const og = document.createElement("optgroup"); og.label = titulo;
+        items.forEach((f) => { const o = document.createElement("option"); o.value = f.id; o.textContent = etiqueta(f); og.appendChild(o); });
+        sel.appendChild(og);
+      });
+      if ([...sel.options].some((o) => o.value === previo)) sel.value = previo;
+    });
+  }
+
+  const filtro = { q: "", linea: "todos" };
+  const norm = (t) => (t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  function pPintarCatalogo() {
+    const cont = $("pCatalogo"); cont.textContent = "";
+    const q = norm(filtro.q).trim();
+    const hall = perfumes.filter((f) => (filtro.linea === "todos" || grupoDe(f.genero) === filtro.linea) &&
+      (!q || norm(f.nombre + " " + f.marca).includes(q)));
+    const MAX = 60;
+    $("pCuenta").textContent = perfumes.length ? (hall.length === perfumes.length ? perfumes.length + " perfumes" : hall.length + " de " + perfumes.length) : "";
+    const n = document.createElement("button"); n.type = "button"; n.className = "chip nueva";
+    n.textContent = "+ Nuevo"; n.setAttribute("aria-pressed", String(pActual === null));
+    n.addEventListener("click", () => { pActual = null; pCargar(P_VACIO); pPintarCatalogo(); $("pMarca").focus(); decirP("Ficha nueva. Escribe la casa y el nombre, y guarda."); });
+    cont.appendChild(n);
+    if (!perfumes.length) {
+      const s = document.createElement("span"); s.className = "vacio";
+      s.textContent = "Tu biblioteca está vacía. Llena la ficha y toca “Guardar perfume”."; cont.appendChild(s); return;
+    }
+    if (!hall.length) { const s = document.createElement("span"); s.className = "vacio"; s.textContent = "Ningún perfume coincide con la búsqueda."; cont.appendChild(s); return; }
+    hall.slice(0, MAX).forEach((f) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip";
+      const t = document.createElement("span"); t.textContent = (f.nombre || "Sin nombre").replace(/\//g, " ");
+      const c = document.createElement("small"); c.textContent = (f.marca || "—") + (grupoDe(f.genero) === "MEN" ? " · Caballero" : grupoDe(f.genero) === "WOMEN" ? " · Dama" : "");
+      b.append(t, c); b.setAttribute("aria-pressed", String(f.id === pActual));
+      b.addEventListener("click", () => {
+        pActual = f.id; pCargar(f);
+        if (formato === "par") $("sIzq").value = f.id; else $("sGrande").value = f.id;
+        pPintarCatalogo(); pintarHoja(); decirP("");
+      });
+      cont.appendChild(b);
+    });
+    if (hall.length > MAX) { const s = document.createElement("span"); s.className = "vacio"; s.textContent = "Y " + (hall.length - MAX) + " más. Escribe para afinar la búsqueda."; cont.appendChild(s); }
+  }
+  $("pBuscar").addEventListener("input", () => { filtro.q = $("pBuscar").value; pPintarCatalogo(); });
+  document.querySelectorAll(".filtros .seg").forEach((b) => b.addEventListener("click", () => {
+    filtro.linea = b.dataset.linea;
+    document.querySelectorAll(".filtros .seg").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    pPintarCatalogo();
+  }));
+
+  const pCampos = { pMarca: "marca", pNombre: "nombre", pGenero: "genero" };
+  function pCargar(f) {
+    pBorrador = { ...P_VACIO, ...f }; delete pBorrador.id;
+    Object.entries(pCampos).forEach(([el, k]) => { $(el).value = pBorrador[k] || ""; });
+    $("pConfirmar").hidden = true; $("pEliminar").hidden = !pActual; $("pDuplicar").hidden = !pActual;
+    opcionesPerfumes();
+  }
+  Object.entries(pCampos).forEach(([el, k]) => $(el).addEventListener("input", () => {
+    pBorrador[k] = $(el).value;
+    const sinGuardar = pActual === null;
+    opcionesPerfumes();
+    if (sinGuardar) { if (formato === "par") $("sIzq").value = "__actual"; else $("sGrande").value = "__actual"; }
+    pintarHoja();
+  }));
+  ["sIzq", "sDer", "sGrande", "vIzq", "vDer", "vGrande"].forEach((id) => $(id).addEventListener("change", pintarHoja));
+  $("bRepetir").addEventListener("click", () => { $("sDer").value = $("sIzq").value; $("vDer").value = $("vIzq").value; pintarHoja(); });
+
+  function ponerFormato(fm) {
+    formato = fm;
+    $("fmPar").setAttribute("aria-pressed", String(fm === "par"));
+    $("fmGrande").setAttribute("aria-pressed", String(fm !== "par"));
+    $("panelPar").hidden = fm !== "par"; $("panelGrande").hidden = fm === "par";
+    pintarHoja();
+  }
+  $("fmPar").addEventListener("click", () => ponerFormato("par"));
+  $("fmGrande").addEventListener("click", () => ponerFormato("grande"));
+
+  function slug(t) { return (t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+
+  function baseP() {
+    if (formato === "par") {
+      const a = pDatos($("sIzq").value), b = pDatos($("sDer").value);
+      return "perfumes-25x25-" + slug(a && a.nombre) + (b && b !== a ? "-y-" + slug(b.nombre) : "-x2");
+    }
+    const a = pDatos($("sGrande").value); return "perfume-50x50-" + slug(a && a.nombre);
+  }
+  const decirP = (t) => { $("avisoP").textContent = t; };
+  const medidasP = () => formato === "par" ? [50, 25] : [50, 50];
+  $("bGuardarP").addEventListener("click", () => { const [w, h] = medidasP(); guardarEtiqueta(lienzoP, w, h, baseP(), "png", decirP, "En la app de Phomemo elige etiqueta de " + w + " × " + h + " mm."); });
+  $("bGuardarPPdf").addEventListener("click", () => { const [w, h] = medidasP(); guardarEtiqueta(lienzoP, w, h, baseP(), "pdf", decirP, "La página mide " + w + " × " + h + " mm; imprímelo al 100 %, sin ajustar a la página."); });
+  $("bCompartirP").addEventListener("click", () => { const [w, h] = medidasP(); guardarEtiqueta(lienzoP, w, h, baseP(), "compartir", decirP, ""); });
+
+  function pDatosLimpios() {
+    return { marca: (pBorrador.marca || "").trim().toUpperCase(), nombre: (pBorrador.nombre || "").trim().toUpperCase(), genero: (pBorrador.genero || "").trim().toUpperCase() };
+  }
+  function pGuardarLocal() { try { localStorage.setItem("frescora-perfumes", JSON.stringify(perfumes)); } catch (e) {} }
+
+  $("pFicha").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const d = pDatosLimpios();
+    if (!d.marca || !d.nombre) { $("avisoP").textContent = "Escribe la casa y el nombre del perfume."; (d.marca ? $("pNombre") : $("pMarca")).focus(); return; }
+    $("pGuardar").disabled = true;
+    const eraNuevo = pActual === null;
+    try {
+      if (pCol) {
+        if (pActual) await pCol.doc(pActual).set(d);
+        else { const ref = await pCol.add(d); pActual = ref.id; }
+      } else {
+        if (!pActual) pActual = "l" + Date.now().toString(36);
+        const i = perfumes.findIndex((f) => f.id === pActual);
+        if (i >= 0) perfumes[i] = { id: pActual, ...d }; else perfumes.push({ id: pActual, ...d });
+        perfumes.sort((a, b) => a.nombre.localeCompare(b.nombre)); pGuardarLocal(); pRecibir(perfumes.slice());
+      }
+      if (eraNuevo) {
+        ["sIzq", "sDer", "sGrande"].forEach((id) => { if ($(id).value === "__actual" || !$(id).value) setTimeout(() => { $(id).value = pActual; pintarHoja(); }, 0); });
+      }
+      $("pEliminar").hidden = false; $("pDuplicar").hidden = false;
+      $("avisoP").textContent = "Perfume guardado: " + d.nombre.replace(/\//g, " ") + ".";
+    } catch (e) {
+      $("avisoP").textContent = e && e.code === "permission_denied" ? "No tienes permiso para editar esta biblioteca." : "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.";
+    } finally { $("pGuardar").disabled = false; }
+  });
+
+  $("pDuplicar").addEventListener("click", () => {
+    const copia = { ...pDatosLimpios(), nombre: "" };
+    pActual = null; pCargar(copia); pPintarCatalogo(); pintarHoja(); $("pNombre").focus();
+    $("avisoP").textContent = "Copia lista con la misma casa. Escribe el nombre del perfume y guarda.";
+  });
+  $("pEliminar").addEventListener("click", () => {
+    $("pConfirmarTxt").textContent = "¿Eliminar " + ((pBorrador.nombre || "este perfume").replace(/\//g, " ")) + " de la biblioteca?";
+    $("pConfirmar").hidden = false; $("pNo").focus();
+  });
+  $("pNo").addEventListener("click", () => { $("pConfirmar").hidden = true; });
+  $("pSi").addEventListener("click", async () => {
+    if (!pActual) return;
+    const id = pActual, nombre = (pBorrador.nombre || "").replace(/\//g, " ");
+    try {
+      if (pCol) await pCol.doc(id).delete();
+      else { perfumes = perfumes.filter((f) => f.id !== id); pGuardarLocal(); }
+      pActual = null;
+      const sig = perfumes.find((f) => f.id !== id);
+      if (sig) { pActual = sig.id; pCargar(sig); } else pCargar(P_VACIO);
+      if (!pCol) pRecibir(perfumes.slice());
+      pPintarCatalogo(); pintarHoja();
+      $("avisoP").textContent = nombre + " se eliminó de la biblioteca.";
+    } catch (e) { $("avisoP").textContent = "No se pudo eliminar. Inténtalo de nuevo."; }
+  });
+
+  function pRecibir(lista) {
+    perfumes = lista;
+    if (pActual && !perfumes.some((f) => f.id === pActual)) pActual = null;
+    if (pPrimera && perfumes.length && pActual === null) { pActual = perfumes[0].id; pCargar(perfumes[0]); }
+    else opcionesPerfumes();
+    if (pPrimera && perfumes.length) {
+      $("sIzq").value = perfumes[0].id; $("sGrande").value = perfumes[0].id;
+      $("sDer").value = (perfumes[1] || perfumes[0]).id;
+    }
+    if (perfumes.length) pPrimera = false;
+    pPintarCatalogo(); pintarHoja();
+  }
+  function pActivarLocal() {
+    pLocal = true; let lista = [];
+    try { lista = JSON.parse(localStorage.getItem("frescora-perfumes") || "[]"); } catch (e) {}
+    pRecibir(Array.isArray(lista) ? lista : []);
+  }
+
+  // Pestañas
+  function verPestana(cual) {
+    const per = cual === "per";
+    $("tabAmb").setAttribute("aria-selected", String(!per)); $("tabPer").setAttribute("aria-selected", String(per));
+    $("vAmb").hidden = per; $("vPer").hidden = !per;
+    if (per) pintarHoja();
+    try { localStorage.setItem("frescora-pestana", cual); } catch (e) {}
+  }
+  $("tabAmb").addEventListener("click", () => verPestana("amb"));
+  $("tabPer").addEventListener("click", () => verPestana("per"));
+  try { if (localStorage.getItem("frescora-pestana") === "per") verPestana("per"); } catch (e) {}
+
+  // ---------------------------------------------------------------- Arranque
+  construirEmblemas();
+  cargarEnFicha(PLANTILLA);
+  pintarCatalogo();
+  const fuentes = Promise.all(["700 20px Cinzel", "600 20px Cinzel", "800 20px Archivo", "700 20px Archivo", "italic 700 20px 'EB Garamond'", "700 20px Tinos"].map((f) => document.fonts.load(f).catch(() => null)));
+  pCargar(P_VACIO); pPintarCatalogo();
+  fuentes.then(() => { pintar(); pintarHoja(); });
+  if (document.fonts) document.fonts.ready.then(() => { pintar(); pintarHoja(); });
+
+  // ================================================================ DATOS (Supabase o este celular)
+  const CFG = window.FRESCORA_CONFIG || {};
+  const sb = (CFG.supabaseUrl && CFG.supabaseAnonKey && window.supabase)
+    ? window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true } })
+    : null;
+
+  function cacheLeer(t) { try { return JSON.parse(localStorage.getItem("frescora-cache-" + t) || "[]"); } catch (e) { return []; } }
+  function cacheGuardar(t, filas) { try { localStorage.setItem("frescora-cache-" + t, JSON.stringify(filas)); } catch (e) {} }
+  const nuevoId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "id" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  // Misma forma que usaba la versión dentro de Claude: doc().set/delete, add, onSnapshot.
+  function coleccion(tabla, campos) {
+    const oyentes = new Set();
+    let filas = cacheLeer(tabla);
+    const limpio = (r) => { const o = {}; campos.forEach((c) => { if (r[c] !== undefined && r[c] !== null) o[c] = r[c]; }); return o; };
+    function avisar() {
+      const docs = filas.slice().sort((a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"))
+        .map((r) => ({ id: r.id, data: () => limpio(r) }));
+      oyentes.forEach(([ok]) => ok({ size: docs.length, empty: !docs.length, docs }));
+    }
+    async function recargar() {
+      if (!sb) { avisar(); return filas.length; }
+      let todo = [];
+      for (let desde = 0; ; desde += 1000) {
+        const { data, error } = await sb.from(tabla).select("*").order("nombre").range(desde, desde + 999);
+        if (error) throw error;
+        todo = todo.concat(data);
+        if (data.length < 1000) break;
+      }
+      filas = todo; cacheGuardar(tabla, filas); avisar();
+      return filas.length;
+    }
+    const api = {
+      orderBy() { return api; },
+      onSnapshot(ok, err) {
+        const par = [ok, err]; oyentes.add(par); avisar();
+        recargar().catch((e) => { if (err) err(e); });
+        return () => oyentes.delete(par);
+      },
+      recargar,
+      cuantos: () => filas.length,
+      doc(id) {
+        return {
+          async set(d) {
+            const fila = { id, ...limpio(d) };
+            if (sb) { const { error } = await sb.from(tabla).upsert(fila); if (error) throw error; }
+            const i = filas.findIndex((r) => r.id === id);
+            if (i >= 0) filas[i] = fila; else filas.push(fila);
+            cacheGuardar(tabla, filas); avisar();
+          },
+          async delete() {
+            if (sb) { const { error } = await sb.from(tabla).delete().eq("id", id); if (error) throw error; }
+            filas = filas.filter((r) => r.id !== id); cacheGuardar(tabla, filas); avisar();
+          }
+        };
+      },
+      async add(d) { const id = nuevoId(); await api.doc(id).set(d); return { id }; },
+      async cargarVarios(lista) {
+        const filasNuevas = lista.map((r) => ({ id: r.id, ...limpio(r) }));
+        if (sb) {
+          for (let i = 0; i < filasNuevas.length; i += 200) {
+            const { error } = await sb.from(tabla).upsert(filasNuevas.slice(i, i + 200));
+            if (error) throw error;
+          }
+          return recargar();
+        }
+        const mapa = new Map(filas.map((r) => [r.id, r])); filasNuevas.forEach((r) => mapa.set(r.id, r));
+        filas = [...mapa.values()]; cacheGuardar(tabla, filas); avisar(); return filas.length;
+      }
+    };
+    return api;
+  }
+
+  const CAMPOS_AMB = ["nombre", "lema", "emblema", "concentracion", "volumen", "ingredientes", "ref"];
+  const CAMPOS_PER = ["marca", "nombre", "genero", "ref"];
+  let datosListos = false;
+
+  function ponerEstado() {
+    const n = col ? col.cuantos() : 0, m = pCol ? pCol.cuantos() : 0;
+    const donde = sb ? (navigator.onLine ? "en la nube" : "sin conexión · copia guardada") : "en este celular";
+    $("estado").textContent = n + " ambientadores · " + m + " perfumes · " + donde;
+  }
+
+  function iniciarDatos() {
+    if (datosListos) { col.recargar().catch(() => {}); pCol.recargar().catch(() => {}); return; }
+    datosListos = true;
+    col = coleccion("fragancias", CAMPOS_AMB);
+    pCol = coleccion("perfumes", CAMPOS_PER);
+    pCol.onSnapshot((snap) => { pRecibir(snap.docs.map((d) => ({ id: d.id, ...d.data() }))); ponerEstado(); revisarSemilla(); }, () => ponerEstado());
+    col.onSnapshot((snap) => { recibir(snap.docs.map((d) => ({ id: d.id, ...d.data() }))); ponerEstado(); revisarSemilla(); }, () => ponerEstado());
+  }
+
+  let semillaRevisada = 0;
+  function revisarSemilla() {
+    // Solo ofrece cargar el catálogo si ambas listas están vacías tras leer la nube (o el celular).
+    if (++semillaRevisada < (sb ? 3 : 1)) return;
+    $("semilla").hidden = !(col.cuantos() === 0 && pCol.cuantos() === 0);
+  }
+  $("bSemilla").addEventListener("click", async () => {
+    $("bSemilla").disabled = true; $("semillaTxt").textContent = "Cargando catálogo…";
+    try {
+      const res = await fetch("catalogo.json", { cache: "no-cache" });
+      const cat = await res.json();
+      await col.cargarVarios(cat.fragancias);
+      await pCol.cargarVarios(cat.perfumes);
+      $("semilla").hidden = true;
+      aviso("Catálogo cargado: " + cat.fragancias.length + " ambientadores y " + cat.perfumes.length + " perfumes.");
+    } catch (e) {
+      $("semillaTxt").textContent = "No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.";
+    } finally { $("bSemilla").disabled = false; }
+  });
+
+  // ---- Inicio de sesión
+  function mostrarAcceso(v) { $("acceso").hidden = !v; if (v) setTimeout(() => $("aCorreo").focus(), 50); }
+  $("fAcceso").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    $("aError").textContent = ""; $("aEntrar").disabled = true;
+    const { error } = await sb.auth.signInWithPassword({ email: $("aCorreo").value.trim(), password: $("aClave").value });
+    $("aEntrar").disabled = false;
+    if (error) { $("aError").textContent = navigator.onLine ? "Correo o contraseña incorrectos." : "Necesitas internet para entrar la primera vez."; return; }
+    mostrarAcceso(false); $("bSalir").hidden = false; iniciarDatos();
+  });
+  $("bSalir").addEventListener("click", async () => { await sb.auth.signOut(); });
+
+  // ================================================================ IMPRESORA BLUETOOTH (beta)
+  const AJ = Object.assign({ densidad: 10, copias: 1, margen: 0, papel: 10 }, (() => { try { return JSON.parse(localStorage.getItem("frescora-impresora") || "{}"); } catch (e) { return {}; } })());
+  function guardarAjustes() { try { localStorage.setItem("frescora-impresora", JSON.stringify(AJ)); } catch (e) {} }
+  const enlace = { dispositivo: null, car: null, sinRespuesta: true };
+  const SERVICIOS = [0xff00, 0xff80, 0xae30, 0xae00, 0xfee7, 0x18f0, 0xffe0,
+    "49535343-fe7d-4ae5-8fa9-9fafd205e455", "e7810a71-73ae-499d-8c15-faa9aef0c3f2"];
+
+  function estadoBt(t, ok) { $("btEstado").textContent = t; $("btEstado").classList.toggle("ok", !!ok); }
+  function pintarAjustes() {
+    $("iDensidad").value = AJ.densidad; $("iDensidadV").textContent = "(" + AJ.densidad + ")";
+    $("iCopias").value = AJ.copias; $("iMargen").value = AJ.margen; $("iPapel").value = String(AJ.papel);
+  }
+  $("iDensidad").addEventListener("input", () => { AJ.densidad = +$("iDensidad").value; $("iDensidadV").textContent = "(" + AJ.densidad + ")"; guardarAjustes(); });
+  $("iCopias").addEventListener("change", () => { AJ.copias = Math.max(1, Math.min(50, Math.round(+$("iCopias").value || 1))); $("iCopias").value = AJ.copias; guardarAjustes(); });
+  $("iMargen").addEventListener("change", () => { AJ.margen = Math.max(0, Math.min(40, +$("iMargen").value || 0)); $("iMargen").value = AJ.margen; guardarAjustes(); });
+  $("iPapel").addEventListener("change", () => { AJ.papel = +$("iPapel").value; guardarAjustes(); });
+  $("bImpresora").addEventListener("click", () => { pintarAjustes(); $("dlgImp").showModal(); });
+
+  async function conectar() {
+    if (!navigator.bluetooth) throw new Error("Este navegador no tiene Bluetooth. Abre la app en Chrome para Android.");
+    if (enlace.car && enlace.dispositivo && enlace.dispositivo.gatt.connected) return;
+    let disp = enlace.dispositivo;
+    if (!disp) {
+      disp = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: SERVICIOS });
+      disp.addEventListener("gattserverdisconnected", () => { enlace.car = null; estadoBt("Impresora desconectada. Se reconecta al imprimir."); });
+    }
+    estadoBt("Conectando con " + (disp.name || "la impresora") + "…");
+    const servidor = await disp.gatt.connect();
+    const servicios = await servidor.getPrimaryServices();
+    let mejor = null;
+    for (const sv of servicios) {
+      let cars = [];
+      try { cars = await sv.getCharacteristics(); } catch (e) { continue; }
+      for (const c of cars) {
+        if (!(c.properties.writeWithoutResponse || c.properties.write)) continue;
+        const puntos = (c.uuid.includes("ff02") ? 4 : 0) + (c.properties.writeWithoutResponse ? 2 : 0) + (sv.uuid.includes("ff00") ? 1 : 0);
+        if (!mejor || puntos > mejor.puntos) mejor = { c, puntos };
+      }
+    }
+    if (!mejor) throw new Error("La impresora no ofrece un canal de escritura conocido.");
+    enlace.dispositivo = disp; enlace.car = mejor.c; enlace.sinRespuesta = !!mejor.c.properties.writeWithoutResponse;
+    estadoBt("Conectada: " + (disp.name || "impresora") + ".", true);
+  }
+  $("bConectar").addEventListener("click", async () => {
+    try { enlace.dispositivo = null; await conectar(); }
+    catch (e) { if (e && e.name === "NotFoundError") estadoBt("No elegiste ninguna impresora."); else estadoBt(e.message || "No se pudo conectar."); }
+  });
+
+  const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function enviar(bytes) {
+    const TROZO = 128;
+    for (let i = 0; i < bytes.length; i += TROZO) {
+      const parte = bytes.subarray(i, i + TROZO);
+      if (enlace.sinRespuesta && enlace.car.writeValueWithoutResponse) { await enlace.car.writeValueWithoutResponse(parte); await espera(12); }
+      else await enlace.car.writeValue(parte);
+    }
+  }
+
+  // Lienzo en 1 bit a 203 ppp (8 px/mm) → comandos de trama tipo Phomemo (ESC/POS GS v 0).
+  function trabajo(canvas) {
+    const w = canvas.width, h = canvas.height, px = canvas.getContext("2d").getImageData(0, 0, w, h).data;
+    const desp = Math.round(AJ.margen * 8), ancho = w + desp, bpl = Math.ceil(ancho / 8);
+    const trama = new Uint8Array(bpl * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (px[(y * w + x) * 4] < 128) { const X = x + desp; trama[y * bpl + (X >> 3)] |= 0x80 >> (X & 7); }
+    }
+    const cab = [0x1b, 0x40, 0x1b, 0x4e, 0x0d, 0x03, 0x1b, 0x4e, 0x04, AJ.densidad, 0x1f, 0x11, AJ.papel,
+      0x1d, 0x76, 0x30, 0x00, bpl & 255, bpl >> 8, h & 255, h >> 8];
+    const pie = [0x1f, 0xf0, 0x05, 0x00, 0x1f, 0xf0, 0x03, 0x00];
+    const out = new Uint8Array(cab.length + trama.length + pie.length);
+    out.set(cab, 0); out.set(trama, cab.length); out.set(pie, cab.length + trama.length);
+    return out;
+  }
+  function lienzoImpresora(dibujar) {
+    const c = document.createElement("canvas"), antes = PX;
+    PX = 8;
+    try { dibujar(c); } finally { PX = antes; }
+    return c;
+  }
+  let imprimiendo = false;
+  async function imprimir(c, decir) {
+    if (imprimiendo) return;
+    imprimiendo = true;
+    try {
+      await conectar();
+      const datos = trabajo(c);
+      for (let i = 0; i < AJ.copias; i++) {
+        decir("Imprimiendo" + (AJ.copias > 1 ? " " + (i + 1) + " de " + AJ.copias : "") + "…");
+        await enviar(datos); await espera(400);
+      }
+      decir("Listo. Si salió corrida o clara, ajusta margen u oscuridad en Impresora.");
+    } catch (e) {
+      if (e && e.name === "NotFoundError") decir("No elegiste ninguna impresora.");
+      else decir((e && e.message) || "No se pudo imprimir.");
+    } finally { imprimiendo = false; }
+  }
+  $("bImprimir").addEventListener("click", () => {
+    const c = lienzoImpresora((cv) => { cv.width = 50 * PX; cv.height = 80 * PX; dibujarEtiqueta(cv, borrador); });
+    imprimir(c, aviso);
+  });
+  $("bImprimirP").addEventListener("click", () => {
+    const c = lienzoImpresora((cv) => pintarHoja(cv));
+    imprimir(c, decirP);
+  });
+  $("bPrueba").addEventListener("click", () => {
+    const c = lienzoImpresora((cv) => {
+      cv.width = 50 * PX; cv.height = 25 * PX;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.setTransform(PX, 0, 0, PX, 0, 0); ctx.strokeStyle = "#000"; ctx.fillStyle = "#000";
+      ctx.lineWidth = .5; ctx.strokeRect(1, 1, 48, 23);
+      for (let x = 5; x < 50; x += 5) { ctx.lineWidth = .3; ctx.beginPath(); ctx.moveTo(x, 1); ctx.lineTo(x, x % 10 ? 3 : 5); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(25, 9); ctx.lineTo(25, 16); ctx.moveTo(21.5, 12.5); ctx.lineTo(28.5, 12.5); ctx.stroke();
+      ctx.font = "800 2.6px Archivo, Arial, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("PRUEBA · MARGEN " + AJ.margen + " mm · OSCURIDAD " + AJ.densidad, 25, 20);
+      umbral(cv);
+    });
+    imprimir(c, (t) => estadoBt(t, false));
+  });
+  if (!navigator.bluetooth) { ["bImprimir", "bImprimirP"].forEach((id) => { $(id).title = "Requiere Chrome para Android"; }); }
+
+  // ================================================================ APP INSTALABLE
+  let pedidoInstalar = null;
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); pedidoInstalar = e; $("bInstalar").hidden = false; });
+  $("bInstalar").addEventListener("click", async () => { if (!pedidoInstalar) return; pedidoInstalar.prompt(); await pedidoInstalar.userChoice; pedidoInstalar = null; $("bInstalar").hidden = true; });
+  window.addEventListener("appinstalled", () => { $("bInstalar").hidden = true; });
+  if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});
+
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && datosListos && sb) { col.recargar().then(ponerEstado).catch(ponerEstado); pCol.recargar().then(ponerEstado).catch(ponerEstado); } });
+  window.addEventListener("online", () => { if (datosListos) iniciarDatos(); ponerEstado(); });
+  window.addEventListener("offline", () => { if (datosListos) ponerEstado(); });
+
+  // ================================================================ ARRANQUE DE DATOS
+  (async () => {
+    if (!sb) { iniciarDatos(); return; }
+    sb.auth.onAuthStateChange((ev) => { if (ev === "SIGNED_OUT") { $("bSalir").hidden = true; mostrarAcceso(true); } });
+    const { data } = await sb.auth.getSession();
+    if (data && data.session) { $("bSalir").hidden = false; iniciarDatos(); }
+    else mostrarAcceso(true);
+  })();
+})();
+</script>
+</body>
+</html>
