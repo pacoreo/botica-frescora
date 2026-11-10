@@ -1,7 +1,7 @@
 // Configuración de la nube (Supabase).
-// Pega aquí la "Project URL" y la clave "anon public" de tu proyecto.
-// Si se dejan vacías, la app guarda el catálogo solo en este celular.
+// La clave publishable es pública por diseño: el acceso a los datos lo
+// protegen el inicio de sesión y las reglas (RLS) de supabase-setup.sql.
 window.FRESCORA_CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: ""
+  supabaseUrl: "https://eculniiojfvdyikmkpxe.supabase.co",
+  supabaseAnonKey: "sb_publishable_zlIr4R5Kc9z0Nx5ep58vXA_Mvq2ZQgc"
 };
